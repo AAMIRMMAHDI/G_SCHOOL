@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}لیست کلاس‌ها | سامانه حضور و غیاب{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3a0ca3;
+        --accent: #7209b7;
+        --success: #4cc9f0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e9ecef;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --radius: 16px;
+        --transition: all 0.3s ease;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+        padding: 5rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+        margin-top: -2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 70%;
+        height: 150%;
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.03) 0%, rgba(114, 9, 183, 0.03) 100%);
+        border-radius: 50%;
+        z-index: 0;
+    }
+    
+    .page-header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: var(--gray);
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+    
+    .alert-success {
+        background: rgba(76, 201, 240, 0.1);
+        border: 1px solid var(--success);
+        color: var(--dark);
+    }
+    
+    .alert-error {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid #dc3545;
+        color: var(--dark);
+    }
+    
+    .current-period {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .period-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+    }
+    
+    .period-time {
+        color: var(--gray);
+        font-size: 0.95rem;
+    }
+    
+    .view-toggle {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .toggle-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        background: var(--light);
+        color: var(--dark);
+        border: 2px solid transparent;
+    }
+    
+    .toggle-btn.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        border-color: var(--primary);
+    }
+    
+    .toggle-btn:not(.active):hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .class-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .class-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .class-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        border-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .class-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+        line-height: 1.3;
+    }
+    
+    .class-period {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        padding: 0.3rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .class-details {
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+    }
+    
+    .class-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 0.7rem;
+        font-size: 0.9rem;
+        color: var(--gray);
+    }
+    
+    .class-detail i {
+        width: 16px;
+        color: var(--primary);
+    }
+    
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        justify-content: center;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+    
+    .btn-outline:hover {
+        background: rgba(67, 97, 238, 0.05);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray);
+        grid-column: 1 / -1;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: var(--border);
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    
+    .logout-section {
+        text-align: center;
+        padding: 2rem 0;
+        border-top: 1px solid var(--border);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 4rem 0 2rem;
+            margin-top: -1rem;
+        }
+        
+        .page-title {
+            font-size: 1.7rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+        }
+        
+        .class-list {
+            grid-template-columns: 1fr;
+        }
+        
+        .class-card {
+            padding: 1.2rem;
+        }
+        
+        .view-toggle {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .toggle-btn {
+            width: 100%;
+            max-width: 250px;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-header-content {
+            padding: 0 1rem;
+        }
+        
+        .container {
+            padding: 0 0.5rem;
+        }
+        
+        .class-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .class-period {
+            align-self: flex-start;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">لیست کلاس‌ها</h1>
+        <p class="page-subtitle">مدیریت و ثبت حضور و غیاب کلاس‌های آموزشی</p>
+    </div>
+</section>
+
+<div class="container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <!-- Current Period Info -->
+    {% with current_schedule=class_schedules.first.schedule %}
+        {% if current_schedule and not show_all %}
+            <div class="current-period">
+                <div class="period-title">زنگ فعلی: {{ current_schedule.get_zeng_display }}</div>
+                {% if current_schedule.start_time and current_schedule.end_time %}
+                    <div class="period-time">{{ current_schedule.start_time }} - {{ current_schedule.end_time }}</div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="current-period">
+                <div class="period-title">
+                    {% if show_all %}
+                        همه زنگ‌های امروز
+                    {% else %}
+                        هیچ زنگی برای امروز ثبت نشده است
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <a href="{% url 'form:class_list' %}" class="toggle-btn {% if not show_all %}active{% endif %}">
+            <i class="fas fa-clock"></i>
+            زنگ فعلی
+        </a>
+        <a href="{% url 'form:class_list' %}?show_all=true" class="toggle-btn {% if show_all %}active{% endif %}">
+            <i class="fas fa-list"></i>
+            همه زنگ‌ها
+        </a>
+    </div>
+    
+    <!-- Classes Grid -->
+    <div class="class-list">
+        {% for class_schedule in class_schedules %}
+            <div class="class-card">
+                <div class="class-header">
+                    <h3 class="class-name">{{ class_schedule.class_obj.name }}</h3>
+                    <span class="class-period">{{ class_schedule.schedule.get_zeng_display }}</span>
+                </div>
+                
+                <div class="class-details">
+                    <div class="class-detail">
+                        <i class="fas fa-calendar-day"></i>
+                        <span>{{ class_schedule.get_day_display }}</span>
+                    </div>
+                    <div class="class-detail">
+                        <i class="fas fa-user-tie"></i>
+                        <span>{{ class_schedule.teacher }}</span>
+                    </div>
+                    {% if class_schedule.schedule.start_time and class_schedule.schedule.end_time %}
+                    <div class="class-detail">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ class_schedule.schedule.start_time }} - {{ class_schedule.schedule.end_time }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'form:attendance' class_schedule.id %}" class="btn btn-primary">
+                    <i class="fas fa-clipboard-check"></i>
+                    ثبت حضور و غیاب
+                </a>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <h3>
+                    {% if show_all %}
+                        کلاسی برای امروز ثبت نشده است
+                    {% else %}
+                        کلاسی برای زنگ فعلی ثبت نشده است
+                    {% endif %}
+                </h3>
+                <p>لطفاً بعداً مجدداً بررسی کنید یا با مدیر سیستم تماس بگیرید.</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Logout Section -->
+    <div class="logout-section">
+        <a href="{% url 'form:logout' %}" class="btn btn-outline">
+            <i class="fas fa-sign-out-alt"></i>
+            خروج از سیستم
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add visual feedback for toggle buttons
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // Add animation to class cards on load
+    const classCards = document.querySelectorAll('.class-card');
+    classCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

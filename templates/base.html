@@ -1,0 +1,473 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}سامانه سازمانی{% endblock title %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #7209b7;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --white: #ffffff;
+            --gray: #6c757d;
+            --border: #e9ecef;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        body {
+            padding-top: 70px;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Side Menu Styles */
+        .side-menu {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            padding: 15px 5px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px 0 0 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .side-menu-item {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--dark);
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            text-decoration: none;
+        }
+
+        .side-menu-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            background: #ff4757;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        /* Dropdown in Side Menu */
+        .side-menu-dropdown {
+            position: absolute;
+            right: 100%;
+            top: 0;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 200px;
+            padding: 10px 0;
+            display: none;
+            z-index: 1001;
+            margin-right: 10px;
+        }
+
+        .side-menu-item.active-dropdown .side-menu-dropdown {
+            display: block;
+        }
+
+        .side-menu-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: var(--dark);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .side-menu-dropdown a:hover {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: var(--shadow);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 12px 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 1.3rem;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 15px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 0 10px;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            padding: 10px 16px;
+            font-weight: 600;
+            color: var(--dark);
+            text-decoration: none;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .nav-tab i {
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding-bottom: 30px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 30px 20px 20px;
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px 25px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .copyright {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-menu {
+                top: auto;
+                bottom: 20px;
+                right: 15px;
+                transform: none;
+                flex-direction: row;
+                border-radius: 25px;
+                padding: 8px 12px;
+                background: rgba(255, 255, 255, 0.98);
+            }
+            
+            .side-menu-item {
+                width: 42px;
+                height: 42px;
+            }
+
+            .side-menu-dropdown {
+                right: 0;
+                left: auto;
+                top: auto;
+                bottom: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+                width: 180px;
+            }
+
+            .nav-tabs {
+                gap: 10px;
+                padding: 0 5px;
+            }
+
+            .nav-tab {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .nav-tab span {
+                display: none;
+            }
+
+            .nav-tab i {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .logo-text {
+                display: none;
+            }
+
+            .nav-tab {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- منوی کناری یکپارچه -->
+<div class="side-menu">
+
+    <!-- آیتم‌های کاربر -->
+    <div class="side-menu-item" id="profile-menu-item">
+        <i class="fas fa-user"></i>
+        <div class="side-menu-dropdown">
+            {% if user.is_authenticated %}
+                <!-- خطای داشبورد حذف شد -->
+                <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+                <a href="{% url 'accounts:logout' %}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    خروج از سیستم
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">
+                    <i class="fas fa-sign-in-alt"></i>
+                    ورود به سیستم
+                </a>
+                <a href="{% url 'accounts:register' %}">
+                    <i class="fas fa-user-plus"></i>
+                    ثبت‌نام کاربر جدید
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- آیتم کسب‌وکارها -->
+    <a href="{% url 'blog:send_list' %}" class="side-menu-item">
+        <i class="fas fa-building"></i>
+    </a>
+
+    <!-- آیتم ثبت شغل -->
+    <a href="{% url 'blog:send_register' %}" class="side-menu-item">
+        <i class="fas fa-plus-circle"></i>
+    </a>
+
+
+
+            </div>
+
+
+                <header class="header">
+                    <div class="header-container">
+                        <a href="{% url 'blog:send_list' %}" class="logo">
+                            <i class="fas fa-cube"></i>
+                            <span class="logo-text">سامانه </span>
+                        </a>
+            <div class="nav-tabs">
+                <a href="{% url 'blog:send_list' %}" class="nav-tab">
+                    <i class="fas fa-building"></i>
+                    <span>وبلاگ ها</span>
+                </a>
+                <a href="{% url 'root:majors' %}" class="nav-tab">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>رشته‌ها</span>
+                </a>    
+                <a href="{% url 'root:resources_list' %}" class="nav-tab">
+                    <i class="fas fa-file-alt"></i>
+                    <span>نمونه سوالات</span>
+                </a>
+                <a href="{% url 'root:about' %}" class="nav-tab">
+                    <i class="fas fa-info-circle"></i>
+                    <span>درباره ما</span>
+                </a>
+                <a href="{% url 'root:contact' %}" class="nav-tab">
+                    <i class="fas fa-envelope"></i>
+                    <span>تماس با ما</span>
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <main>
+        <div class="main-container">
+            {% block content %}
+            <!-- محتوای اصلی در اینجا قرار می‌گیرد -->
+            {% endblock content %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <ul class="footer-links">
+                <li><a href="{% url 'blog:send_list' %}">خانه</a></li>
+                <li><a href="{% url 'blog:send_list' %}">کسب‌وکارها</a></li>
+                <li><a href="{% url 'root:about' %}">درباره ما</a></li>
+                <li><a href="{% url 'root:contact' %}">تماس با ما</a></li>
+                <li><a href="#">شرایط استفاده</a></li>
+                <li><a href="#">حریم خصوصی</a></li>
+            </ul>
+            <div class="copyright">
+                تمامی حقوق برای سامانه سازمانی محفوظ است © ۱۴۰۳
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // مدیریت منوی پروفایل
+            const profileMenuItem = document.getElementById('profile-menu-item');
+            const dropdownLinks = profileMenuItem.querySelectorAll('.side-menu-dropdown a');
+            let isMobile = window.innerWidth <= 768;
+            
+            // تابع برای بستن همه منوهای باز
+            function closeAllDropdowns() {
+                document.querySelectorAll('.side-menu-item').forEach(item => {
+                    item.classList.remove('active-dropdown');
+                });
+            }
+            
+            // رویداد کلیک برای آیتم پروفایل
+            profileMenuItem.addEventListener('click', function(e) {
+                if (e.target.closest('a')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (this.classList.contains('active-dropdown')) {
+                    this.classList.remove('active-dropdown');
+                    return;
+                }
+                
+                closeAllDropdowns();
+                this.classList.add('active-dropdown');
+            });
+            
+            // بستن منوها با کلیک خارج از آنها
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.side-menu-item') && !e.target.closest('.side-menu-dropdown')) {
+                    closeAllDropdowns();
+                }
+            });
+            
+            // تنظیم تب فعال بر اساس URL جاری
+            const navTabs = document.querySelectorAll('.nav-tab');
+            const currentPath = window.location.pathname;
+
+            navTabs.forEach(tab => {
+                if (tab.getAttribute('href') === currentPath) {
+                    tab.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,923 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ blog.title }} | سامانه سازمانی{% endblock title %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee; /* آبی، از لیست وبلاگ‌ها */
+        --secondary: #3a0ca3; /* بنفش تیره، از لیست وبلاگ‌ها */
+        --accent: #7209b7; /* بنفش روشن، از لیست وبلاگ‌ها */
+        --success: #4cc9f0; /* فیروزه‌ای، از لیست وبلاگ‌ها */
+        --dark: #212529;
+        --light: #f8f9fa;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e9ecef;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+        --border-radius: 16px;
+        --font-family: 'Vazir', 'Segoe UI', sans-serif;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 16px;
+        direction: rtl;
+        font-family: var(--font-family);
+    }
+
+    .blog-detail {
+        margin: 40px 0 80px;
+    }
+
+    /* Gallery */
+    .blog-gallery {
+        position: relative;
+        max-width: 100%;
+        margin-bottom: 32px;
+    }
+
+    .gallery-slider {
+        position: relative;
+        height: 360px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        background: var(--light);
+        box-shadow: var(--shadow);
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .gallery-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    .gallery-slide {
+        flex: 0 0 100%;
+        height: 100%;
+        scroll-snap-align: center;
+    }
+
+    .gallery-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .gallery-thumbnails {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding: 16px 0;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--gray);
+    }
+
+    .gallery-thumbnails::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .gallery-thumbnails::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+    }
+
+    .gallery-thumbnails::-webkit-scrollbar-track {
+        background: var(--gray);
+    }
+
+    .thumbnail {
+        flex: 0 0 90px;
+        height: 90px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background: var(--light);
+    }
+
+    .thumbnail.active {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary);
+        transform: scale(1.05);
+    }
+
+    /* Blog Info */
+    .blog-info {
+        padding: 20px;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+
+    .blog-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 16px;
+        line-height: 1.4;
+    }
+
+    .blog-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        font-size: 0.9rem;
+        color: var(--gray);
+    }
+
+    .rating {
+        display: flex;
+        gap: 6px;
+        color: var(--success);
+    }
+
+    .rating i {
+        font-size: 1rem;
+    }
+
+    .blog-category {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* Tabs */
+    .blog-tabs {
+        margin: 56px 0;
+    }
+
+    .tabs-header {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        background: var(--light);
+        padding: 12px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .tabs-header::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        flex: 0 0 120px;
+        padding: 14px 20px;
+        background: none;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--dark);
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: center;
+        scroll-snap-align: center;
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+    }
+
+    .tab-btn:hover {
+        background: var(--gray);
+        color: var(--primary);
+    }
+
+    .tab-content {
+        display: none;
+        padding: 24px;
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        font-size: 0.9rem;
+        line-height: 1.8;
+        color: var(--gray);
+        margin-top: 16px;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .blog-content {
+        font-size: 1rem;
+        color: var(--gray);
+        line-height: 1.8;
+    }
+
+    .blog-meta-info {
+        border-top: 2px solid var(--border);
+        padding-top: 24px;
+    }
+
+    .meta-item {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+    }
+
+    .meta-title {
+        font-weight: 600;
+        min-width: 100px;
+        color: var(--dark);
+    }
+
+    .meta-value {
+        color: var(--gray);
+    }
+
+    .location-map {
+        height: 100px;
+        background: var(--gray);
+        border-radius: var(--border-radius);
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+
+    /* Comments */
+    .comment-item {
+        padding: 16px;
+        margin-bottom: 24px;
+        background: var(--light);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+    }
+
+    .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .comment-avatar {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .comment-user {
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .comment-rating {
+        display: flex;
+        gap: 6px;
+        color: var(--success);
+    }
+
+    .comment-comment {
+        color: var(--gray);
+        line-height: 1.7;
+    }
+
+    .comment-form h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .comment-form .rating-input {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .comment-form .rating-input label {
+        cursor: pointer;
+    }
+
+    .comment-form .rating-input input {
+        display: none;
+    }
+
+    .comment-form .rating-input i {
+        color: var(--gray);
+        font-size: 1.1rem;
+        transition: var(--transition);
+    }
+
+    .comment-form .rating-input input:checked ~ i,
+    .comment-form .rating-input label:hover i,
+    .comment-form .rating-input label:hover ~ label i {
+        color: var(--success);
+    }
+
+    .comment-form textarea {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        min-height: 120px;
+        font-size: 0.9rem;
+        font-family: var(--font-family);
+        margin-bottom: 20px;
+    }
+
+    .comment-form textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+    }
+
+    .comment-form button {
+        padding: 14px 28px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .comment-form button:hover {
+        background: linear-gradient(135deg, #3a52cc, #2e0990);
+        transform: translateY(-2px);
+    }
+
+    .more-comments {
+        text-align: center;
+        margin-top: 16px;
+    }
+
+    .more-comments button {
+        padding: 12px 24px;
+        background: none;
+        border: 2px solid var(--primary);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--primary);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .more-comments button:hover {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    /* Similar Blogs */
+    .similar-blogs {
+        margin: 72px 0;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 28px;
+        position: relative;
+        padding-bottom: 12px;
+    }
+
+    .section-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 48px;
+        height: 3px;
+        background: var(--primary);
+    }
+
+    .similar-blogs-carousel {
+        display: flex;
+        overflow-x: auto;
+        gap: 20px;
+        padding-bottom: 16px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--gray);
+    }
+
+    .similar-blogs-carousel::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .similar-blogs-carousel::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+    }
+
+    .similar-blogs-carousel::-webkit-scrollbar-track {
+        background: var(--gray);
+    }
+
+    .blog-card {
+        flex: 0 0 220px;
+        background: var(--white);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        scroll-snap-align: center;
+    }
+
+    .blog-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .blog-img {
+        height: 200px;
+        overflow: hidden;
+        background: var(--light);
+    }
+
+    .blog-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .blog-card:hover .blog-img img {
+        transform: scale(1.05);
+    }
+
+    .blog-info {
+        padding: 16px;
+    }
+
+    .blog-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .blog-name a {
+        text-decoration: none;
+        color: var(--dark);
+        transition: var(--transition);
+    }
+
+    .blog-name a:hover {
+        color: var(--primary);
+    }
+
+    .blog-rating {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    /* Responsive Design */
+    @media (min-width: 768px) {
+        .blog-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .blog-gallery {
+            margin-bottom: 0;
+        }
+
+        .gallery-slider {
+            height: 520px;
+        }
+
+        .gallery-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            overflow-x: hidden;
+        }
+
+        .thumbnail {
+            flex: 0 0 120px;
+            height: 120px;
+        }
+
+        .blog-info {
+            padding: 28px;
+        }
+
+        .blog-title {
+            font-size: 1.8rem;
+        }
+
+        .tabs-header {
+            flex-direction: row;
+            justify-content: flex-start;
+            padding: 16px 0;
+            box-shadow: none;
+            overflow-x: hidden;
+        }
+
+        .tab-btn {
+            flex: none;
+            padding: 12px 24px;
+        }
+
+        .similar-blogs-carousel {
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 24px;
+        }
+
+        .blog-card {
+            flex: 0 0 260px;
+        }
+
+        .blog-img {
+            height: 240px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .container {
+            padding: 0 12px;
+        }
+
+        .blog-detail {
+            margin: 24px 0 48px;
+        }
+
+        .gallery-slider {
+            height: 280px;
+        }
+
+        .thumbnail {
+            flex: 0 0 80px;
+            height: 80px;
+        }
+
+        .blog-title {
+            font-size: 1.4rem;
+        }
+
+        .blog-content {
+            font-size: 0.95rem;
+        }
+
+        .tabs-header {
+            gap: 6px;
+            padding: 10px;
+        }
+
+        .tab-btn {
+            font-size: 0.9rem;
+            padding: 10px 16px;
+            flex: 0 0 100px;
+        }
+
+        .tab-content {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+        }
+
+        .blog-card {
+            flex: 0 0 200px;
+        }
+
+        .blog-img {
+            height: 180px;
+        }
+
+        .blog-name {
+            font-size: 0.95rem;
+        }
+
+        .blog-rating {
+            font-size: 0.95rem;
+        }
+
+        .comment-item {
+            padding: 12px;
+        }
+
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            font-size: 0.7rem;
+        }
+
+        .comment-user {
+            font-size: 0.9rem;
+        }
+
+        .comment-comment {
+            font-size: 0.85rem;
+        }
+
+        .comment-form h3 {
+            font-size: 1rem;
+        }
+
+        .comment-form textarea {
+            min-height: 100px;
+            font-size: 0.85rem;
+        }
+
+        .comment-form button {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+        }
+
+        .more-comments button {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="blog-detail">
+        <div class="blog-gallery">
+            <div class="gallery-slider" id="gallerySlider">
+                {% for image in images %}
+                    <div class="gallery-slide">
+                        <img src="{{ image.image.url }}" alt="{{ blog.title|default:_('وبلاگ بدون عنوان') }}" loading="lazy">
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-images"></i>
+                        <p>{% trans "هنوز تصویری اضافه نشده است" %}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="gallery-thumbnails">
+                {% for image in images %}
+                    <div class="thumbnail {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" alt="{{ blog.title|default:_('وبلاگ بدون عنوان') }}" loading="lazy">
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <p>{% trans "تصویری یافت نشد" %}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="blog-info">
+            <h1 class="blog-title">{{ blog.title|default:_('وبلاگ بدون عنوان') }}</h1>
+            <div class="blog-meta">
+                <div class="rating">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= avg_rating|floatformat:0 %}
+                            <i class="fas fa-star"></i>
+                        {% elif forloop.counter <= avg_rating|add:0.5 %}
+                            <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="review-count">({{ rating_count }} {% trans "نظر" %})</span>
+                <span class="blog-category">{{ blog.category.name|default:_('بدون دسته‌بندی') }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="blog-tabs">
+        <div class="tabs-header">
+            <button class="tab-btn active" data-tab="content">{% trans "توضیحات" %}</button>
+            <button class="tab-btn" data-tab="location">{% trans "آدرس" %}</button>
+            <button class="tab-btn" data-tab="comments">{% trans "نظرات" %} ({{ comments.count }})</button>
+        </div>
+        <div class="tab-content active" id="content">
+            <div class="blog-content">{{ blog.content|default:_('محتوای وبلاگ در دسترس نیست') }}</div>
+        </div>
+        <div class="tab-content" id="location">
+            <div class="blog-meta-info">
+                <div class="meta-item">
+                    <span class="meta-title">{% trans "آدرس" %}:</span>
+                    <span class="meta-value">{{ blog.address|default:_('بدون آدرس') }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-title">{% trans "شهر" %}:</span>
+                    <span class="meta-value">{{ blog.city|default:_('بدون شهر') }}</span>
+                </div>
+                {% if blog.district %}
+                    <div class="meta-item">
+                        <span class="meta-title">{% trans "منطقه" %}:</span>
+                        <span class="meta-value">{{ blog.district }}</span>
+                    </div>
+                {% endif %}
+                <div class="location-map">
+                    <i class="fas fa-map"></i>
+                    {% trans "نمایش نقشه" %}
+                </div>
+            </div>
+        </div>
+        <div class="tab-content" id="comments">
+            {% for comment in comments|slice:":5" %}
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">{{ comment.user.username|slice:":2"|upper }}</div>
+                        <div>
+                            <div class="comment-user">{{ comment.user.get_full_name|default:comment.user.username }}</div>
+                            <div class="comment-rating">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= comment.rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="comment-comment">{{ comment.comment|default:_('بدون نظر') }}</p>
+                </div>
+            {% empty %}
+                <p>{% trans "هنوز نظری ثبت نشده است" %}</p>
+            {% endfor %}
+            {% if comments|length > 5 %}
+                <div class="more-comments">
+                    <button id="showMoreComments">{% trans "نظرات بیشتر" %}</button>
+                </div>
+            {% endif %}
+            {% if user.is_authenticated %}
+                {% if user_has_commented %}
+                    <p class="comment-form">
+                        <i class="fas fa-check"></i>
+                        {% trans "شما قبلاً نظر داده‌اید" %}
+                    </p>
+                {% else %}
+                    <form class="comment-form" method="post" action="{% url 'blog:add_comment' blog.slug %}">
+                        {% csrf_token %}
+                        <h3>{% trans "ثبت نظر شما" %}</h3>
+                        <div class="rating-input">
+                            {% for i in "12345" %}
+                                <input type="radio" name="rating" value="{{ i }}" id="rating-{{ i }}" {% if forloop.first %}checked{% endif %}>
+                                <label for="rating-{{ i }}"><i class="fas fa-star"></i></label>
+                            {% endfor %}
+                        </div>
+                        <textarea name="comment" placeholder="{% trans 'نظر خود را بنویسید...' %}" required></textarea>
+                        <button type="submit">{% trans "ثبت نظر" %}</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p>{% trans "برای ثبت نظر، لطفاً" %} <a href="{% url 'accounts:login' %}?next={% url 'blog:add_comment' blog.slug %}" style="color: var(--primary);">{% trans "وارد شوید" %}</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="similar-blogs">
+        <h2 class="section-title">{% trans "وبلاگ‌های مشابه" %}</h2>
+        <div class="similar-blogs-carousel">
+            {% for similar in similar_blogs %}
+                <div class="blog-card">
+                    <div class="blog-img">
+                        {% for image in similar.images.all %}
+                            {% if forloop.first %}
+                                <img src="{{ image.image.url }}" alt="{{ similar.title|default:_('وبلاگ بدون عنوان') }}" loading="lazy">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="blog-info">
+                        <h3 class="blog-name"><a href="{% url 'blog:send_detail' similar.slug %}">{{ similar.title|default:_('وبلاگ بدون عنوان') }}</a></h3>
+                        <div class="blog-rating">
+                            <span>{{ similar.avg_rating|floatformat:1 }}</span>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p style="text-align: center; color: var(--dark); font-size: 0.95rem; padding: 40px 0; width: 100%;">{% trans "وبلاگ مشابهی یافت نشد" %}</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gallery Slider
+    const gallerySlider = document.getElementById('gallerySlider');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+
+    thumbnails.forEach((thumbnail, index) => {
+        thumbnail.addEventListener('click', () => {
+            thumbnails.forEach(t => t.classList.remove('active'));
+            thumbnail.classList.add('active');
+            gallerySlider.scrollTo({
+                left: index * gallerySlider.offsetWidth,
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Update active thumbnail on scroll
+    gallerySlider.addEventListener('scroll', () => {
+        const index = Math.round(gallerySlider.scrollLeft / gallerySlider.offsetWidth);
+        thumbnails.forEach(t => t.classList.remove('active'));
+        if (thumbnails[index]) {
+            thumbnails[index].classList.add('active');
+        }
+    });
+
+    // Tabs
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+        });
+    });
+
+    // Show More Comments
+    const showMoreComments = document.getElementById('showMoreComments');
+    if (showMoreComments) {
+        showMoreComments.addEventListener('click', () => {
+            const commentsList = document.getElementById('comments');
+            commentsList.innerHTML = `
+                {% for comment in comments %}
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-avatar">{{ comment.user.username|slice:":2"|upper }}</div>
+                            <div>
+                                <div class="comment-user">{{ comment.user.get_full_name|default:comment.user.username }}</div>
+                                <div class="comment-rating">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= comment.rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="comment-comment">{{ comment.comment|default:_('بدون نظر') }}</p>
+                    </div>
+                {% empty %}
+                    <p>{% trans "هنوز نظری ثبت نشده است" %}</p>
+                {% endfor %}
+            `;
+            showMoreComments.remove();
+        });
+    }
+
+    // Comment Form Submission
+    const commentForm = document.querySelector('.comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', (e) => {
+            const submitBtn = commentForm.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {% trans "در حال ثبت..." %}';
+            submitBtn.disabled = true;
+            setTimeout(() => {
+                submitBtn.innerHTML = '{% trans "ثبت نظر" %}';
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+    }
+});
+</script>
+{% endblock content %}

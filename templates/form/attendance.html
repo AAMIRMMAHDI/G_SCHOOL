@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}حضور و غیاب {{ class_schedule.class_obj.name }} | سامانه حضور و غیاب{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3a0ca3;
+        --accent: #7209b7;
+        --success: #4cc9f0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e9ecef;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --radius: 16px;
+        --transition: all 0.3s ease;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+        padding: 5rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+        margin-top: -2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 70%;
+        height: 150%;
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.03) 0%, rgba(114, 9, 183, 0.03) 100%);
+        border-radius: 50%;
+        z-index: 0;
+    }
+    
+    .page-header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: var(--gray);
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .attendance-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        border: 1px solid transparent;
+        transition: var(--transition);
+    }
+    
+    .attendance-card:hover {
+        border-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .class-info {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+    }
+    
+    .class-detail {
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .class-detail i {
+        font-size: 1.1rem;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+    
+    .alert-success {
+        background: rgba(76, 201, 240, 0.1);
+        border: 1px solid var(--success);
+        color: var(--dark);
+    }
+    
+    .alert-error {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid #dc3545;
+        color: var(--dark);
+    }
+    
+    .attendance-table-container {
+        overflow-x: auto;
+        padding: 1.5rem;
+    }
+    
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        min-width: 800px;
+    }
+    
+    .attendance-table th, .attendance-table td {
+        padding: 1rem;
+        text-align: right;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .attendance-table th {
+        background: var(--light);
+        color: var(--dark);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .attendance-table td {
+        color: var(--dark);
+        font-size: 0.9rem;
+    }
+    
+    .attendance-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .attendance-table tr:hover td {
+        background: rgba(67, 97, 238, 0.03);
+    }
+    
+    .status-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .status-option {
+        position: relative;
+    }
+    
+    .status-option input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .status-btn {
+        padding: 0.6rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 500;
+        background: var(--white);
+    }
+    
+    .status-btn.present {
+        color: #198754;
+        border-color: rgba(25, 135, 84, 0.3);
+    }
+    
+    .status-btn.absent {
+        color: #dc3545;
+        border-color: rgba(220, 53, 69, 0.3);
+    }
+    
+    .status-btn.late {
+        color: #fd7e14;
+        border-color: rgba(253, 126, 20, 0.3);
+    }
+    
+    .status-option input:checked + .status-btn {
+        box-shadow: 0 0 0 2px var(--primary);
+        transform: translateY(-2px);
+    }
+    
+    .status-option input:checked + .status-btn.present {
+        background: rgba(25, 135, 84, 0.1);
+        border-color: #198754;
+    }
+    
+    .status-option input:checked + .status-btn.absent {
+        background: rgba(220, 53, 69, 0.1);
+        border-color: #dc3545;
+    }
+    
+    .status-option input:checked + .status-btn.late {
+        background: rgba(253, 126, 20, 0.1);
+        border-color: #fd7e14;
+    }
+    
+    .submit-section {
+        padding: 1.5rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+    
+    .btn-outline:hover {
+        background: rgba(67, 97, 238, 0.05);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--border);
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 4rem 0 2rem;
+            margin-top: -1rem;
+        }
+        
+        .page-title {
+            font-size: 1.7rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+        }
+        
+        .class-info {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .class-detail {
+            font-size: 0.9rem;
+        }
+        
+        .attendance-table th, .attendance-table td {
+            padding: 0.8rem;
+        }
+        
+        .status-btn {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        .submit-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-header-content {
+            padding: 0 1rem;
+        }
+        
+        .container {
+            padding: 0 0.5rem;
+        }
+        
+        .attendance-table-container {
+            padding: 1rem;
+        }
+        
+        .attendance-table th, .attendance-table td {
+            padding: 0.6rem;
+            font-size: 0.85rem;
+        }
+        
+        .status-options {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .status-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">حضور و غیاب کلاس</h1>
+        <p class="page-subtitle">ثبت وضعیت حضور دانش‌آموزان در کلاس</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Class Information Card -->
+    <div class="attendance-card">
+        <div class="class-info">
+            <div class="class-detail">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>{{ class_schedule.class_obj.name }}</span>
+            </div>
+            <div class="class-detail">
+                <i class="fas fa-calendar-day"></i>
+                <span>{{ class_schedule.get_day_display }}</span>
+            </div>
+            <div class="class-detail">
+                <i class="fas fa-clock"></i>
+                <span>{{ class_schedule.schedule.get_zeng_display }}</span>
+            </div>
+            <div class="class-detail">
+                <i class="fas fa-user-tie"></i>
+                <span>{{ class_schedule.teacher }}</span>
+            </div>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="attendance-table-container">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>شماره ردیف</th>
+                            <th>نام</th>
+                            <th>نام خانوادگی</th>
+                            <th>نام پدر</th>
+                            <th>وضعیت</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                            <tr>
+                                <td>{{ student.row_number }}</td>
+                                <td>{{ student.first_name }}</td>
+                                <td>{{ student.last_name }}</td>
+                                <td>{{ student.father_name }}</td>
+                                <td>
+                                    <div class="status-options">
+                                        <div class="status-option">
+                                            <input type="radio" name="status_{{ student.id }}" value="P" id="present_{{ student.id }}" {% if attendance_records.get(student.id, 'P') == 'P' %}checked{% endif %}>
+                                            <label for="present_{{ student.id }}" class="status-btn present">
+                                                <i class="fas fa-check"></i> حضور
+                                            </label>
+                                        </div>
+                                        <div class="status-option">
+                                            <input type="radio" name="status_{{ student.id }}" value="A" id="absent_{{ student.id }}" {% if attendance_records.get(student.id, 'A') == 'A' %}checked{% endif %}>
+                                            <label for="absent_{{ student.id }}" class="status-btn absent">
+                                                <i class="fas fa-times"></i> غایب
+                                            </label>
+                                        </div>
+                                        <div class="status-option">
+                                            <input type="radio" name="status_{{ student.id }}" value="L" id="late_{{ student.id }}" {% if attendance_records.get(student.id, 'L') == 'L' %}checked{% endif %}>
+                                            <label for="late_{{ student.id }}" class="status-btn late">
+                                                <i class="fas fa-clock"></i> تاخیر
+                                            </label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-users"></i>
+                                        <h3>دانش‌آموزی یافت نشد</h3>
+                                        <p>هیچ دانش‌آموزی برای این کلاس ثبت نشده است.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if students %}
+                <div class="submit-section">
+                    <a href="{% url 'form:class_list' %}" class="btn btn-outline">
+                        <i class="fas fa-arrow-right"></i>
+                        بازگشت به لیست کلاس‌ها
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        ثبت حضور و غیاب
+                    </button>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add visual feedback when status buttons are clicked
+    const statusButtons = document.querySelectorAll('.status-btn');
+    
+    statusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons in the same group
+            const parentOptions = this.closest('.status-options');
+            parentOptions.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+        });
+    });
+    
+    // Initialize active state for checked buttons
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        const label = document.querySelector(`label[for="${radio.id}"]`);
+        if (label) {
+            label.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}

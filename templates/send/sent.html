@@ -1,0 +1,638 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "ثبت وبلاگ | سامانه سازمانی" %}{% endblock title %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3a0ca3;
+        --accent: #7209b7;
+        --success: #4cc9f0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e9ecef;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --radius: 16px;
+    }
+
+    .blog-register-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+    }
+
+    .form-content {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        background: var(--white);
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 200px;
+        resize: vertical;
+    }
+
+    .error {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+
+    .image-upload-section {
+        border: 2px dashed var(--border);
+        padding: 2rem;
+        text-align: center;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--light);
+    }
+
+    .image-upload-section:hover {
+        border-color: var(--primary);
+        background: rgba(67, 97, 238, 0.05);
+    }
+
+    .upload-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .image-upload-section p {
+        color: var(--gray);
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .image-upload-section small {
+        color: var(--gray);
+        font-size: 0.85rem;
+    }
+
+    .image-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .preview-item {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .preview-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #dc3545;
+        color: var(--white);
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .preview-remove:hover {
+        background: #c82333;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.7rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+        background: rgba(67, 97, 238, 0.05);
+    }
+
+    .preview-section {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        height: fit-content;
+        position: sticky;
+        top: 6rem;
+    }
+
+    .preview-card {
+        margin-bottom: 2rem;
+    }
+
+    .preview-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .preview-logo {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-category {
+        color: var(--primary);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .preview-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .preview-gallery img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .preview-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+
+    .preview-content {
+        font-size: 0.9rem;
+        color: var(--gray);
+        line-height: 1.5;
+    }
+
+    .tip-box {
+        background: var(--light);
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        border-left: 4px solid var(--primary);
+    }
+
+    .tip-box h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tip-box p {
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .blog-register-container {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .preview-section {
+            position: static;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .form-content {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .image-upload-section {
+            padding: 1.5rem;
+        }
+
+        .preview-section {
+            padding: 1.5rem;
+        }
+
+        .preview-title {
+            font-size: 1.3rem;
+        }
+
+        .preview-gallery img {
+            height: 80px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .blog-register-container {
+            padding: 0.5rem;
+        }
+
+        .form-content,
+        .preview-section {
+            padding: 1rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .image-preview-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+
+        .preview-item img {
+            height: 100px;
+        }
+    }
+</style>
+
+<div class="blog-register-container">
+    <div class="form-content">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-blog"></i>
+                    {% trans "اطلاعات وبلاگ" %}
+                </h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.title.id_for_label }}">{% trans "عنوان وبلاگ" %} *</label>
+                        {{ form.title }}
+                        {% for error in form.title.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.category.id_for_label }}">{% trans "دسته‌بندی" %} *</label>
+                        {{ form.category }}
+                        {% for error in form.category.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="{{ form.content.id_for_label }}">{% trans "محتوای وبلاگ" %} *</label>
+                        {{ form.content }}
+                        {% for error in form.content.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="{{ form.address.id_for_label }}">{% trans "آدرس" %}</label>
+                        {{ form.address }}
+                        {% for error in form.address.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.city.id_for_label }}">{% trans "شهر" %}</label>
+                        {{ form.city }}
+                        {% for error in form.city.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.district.id_for_label }}">{% trans "منطقه" %}</label>
+                        {{ form.district }}
+                        {% for error in form.district.errors %}
+                            <p class="error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-images"></i>
+                    {% trans "تصاویر وبلاگ" %}
+                </h2>
+                
+                <div class="image-upload-section" onclick="document.getElementById('imageUpload').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p>{% trans "برای آپلود تصاویر کلیک کنید یا فایل‌ها را اینجا رها کنید" %}</p>
+                    <small>{% trans "فرمت‌های مجاز: JPG, PNG, GIF (حداکثر ۵ مگابایت)" %}</small>
+                    <input type="file" id="imageUpload" name="images" multiple accept="image/*" style="display: none;">
+                </div>
+                
+                <div class="image-preview-grid" id="imagePreview"></div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'blog:send_list' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i>
+                    {% trans "انصراف" %}
+                </a>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-check"></i>
+                    {% trans "ثبت وبلاگ" %}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="preview-section">
+        <div class="preview-card">
+            <div class="preview-header">
+                <div class="preview-logo">
+                    <i class="fas fa-blog"></i>
+                </div>
+                <div class="preview-title" id="previewTitle">{{ form.title.value|default:_('عنوان وبلاگ') }}</div>
+                <div class="preview-category" id="previewCategory">
+                    {% if form.category.value %}
+                        {{ form.category.value }}
+                    {% else %}
+                        {% trans 'دسته‌بندی' %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="preview-body">
+                <div class="preview-gallery" id="previewGallery"></div>
+                
+                <div class="preview-info">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="previewAddress">{{ form.address.value|default:_('آدرس') }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-city"></i>
+                        <span id="previewCity">{{ form.city.value|default:_('شهر') }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-map-signs"></i>
+                        <span id="previewDistrict">{{ form.district.value|default:_('منطقه') }}</span>
+                    </div>
+                </div>
+                
+                <div class="preview-content">
+                    <p id="previewContent">{{ form.content.value|default:_('محتوای وبلاگ') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tip-box">
+            <h4>
+                <i class="fas fa-lightbulb"></i>
+                {% trans "نکته مهم" %}
+            </h4>
+            <p>{% trans "پس از ثبت اطلاعات، وبلاگ شما پس از تأیید نهایی در سامانه نمایش داده خواهد شد. زمان تأیید حداکثر ۲۴ ساعت کاری می‌باشد." %}</p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('id_title');
+    const categorySelect = document.getElementById('id_category');
+    const contentInput = document.getElementById('id_content');
+    const addressInput = document.getElementById('id_address');
+    const cityInput = document.getElementById('id_city');
+    const districtInput = document.getElementById('id_district');
+    const imageUpload = document.getElementById('imageUpload');
+    const imagePreview = document.getElementById('imagePreview');
+    const galleryPreview = document.getElementById('previewGallery');
+
+    if (titleInput) {
+        titleInput.addEventListener('input', function() {
+            document.getElementById('previewTitle').textContent = this.value || '{% trans "عنوان وبلاگ" %}';
+        });
+    }
+
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            document.getElementById('previewCategory').textContent = 
+                this.options[this.selectedIndex].text || '{% trans "دسته‌بندی" %}';
+        });
+    }
+
+    if (contentInput) {
+        contentInput.addEventListener('input', function() {
+            document.getElementById('previewContent').textContent = this.value || '{% trans "محتوای وبلاگ" %}';
+        });
+    }
+
+    if (addressInput) {
+        addressInput.addEventListener('input', function() {
+            document.getElementById('previewAddress').textContent = this.value || '{% trans "آدرس" %}';
+        });
+    }
+
+    if (cityInput) {
+        cityInput.addEventListener('input', function() {
+            document.getElementById('previewCity').textContent = this.value || '{% trans "شهر" %}';
+        });
+    }
+
+    if (districtInput) {
+        districtInput.addEventListener('input', function() {
+            document.getElementById('previewDistrict').textContent = this.value || '{% trans "منطقه" %}';
+        });
+    }
+
+    if (imageUpload) {
+        imageUpload.addEventListener('change', function(e) {
+            const files = e.target.files;
+            imagePreview.innerHTML = '';
+            galleryPreview.innerHTML = '';
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.match('image.*')) continue;
+
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    // Preview in form section
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'preview-remove';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.addEventListener('click', function() {
+                        previewItem.remove();
+                        updateGalleryPreview();
+                    });
+
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    imagePreview.appendChild(previewItem);
+
+                    // Preview in gallery section
+                    if (i < 4) {
+                        const galleryImg = document.createElement('img');
+                        galleryImg.src = e.target.result;
+                        galleryPreview.appendChild(galleryImg);
+                    }
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            // Update gallery preview after file selection
+            function updateGalleryPreview() {
+                galleryPreview.innerHTML = '';
+                const previewItems = imagePreview.querySelectorAll('.preview-item img');
+                previewItems.forEach((img, index) => {
+                    if (index < 4) {
+                        const galleryImg = document.createElement('img');
+                        galleryImg.src = img.src;
+                        galleryPreview.appendChild(galleryImg);
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock content %}

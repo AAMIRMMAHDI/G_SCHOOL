@@ -1,0 +1,1024 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "لیست وبلاگ‌ها | سامانه سازمانی" %}{% endblock title %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3a0ca3;
+        --accent: #7209b7;
+        --success: #4cc9f0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e9ecef;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --radius: 16px;
+    }
+    
+    .blog-list-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+    }
+    
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+        padding: 5rem 0 2rem;
+        position: relative;
+        overflow: hidden;
+        margin-top: -2rem;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 70%;
+        height: 150%;
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.03) 0%, rgba(114, 9, 183, 0.03) 100%);
+        border-radius: 50%;
+        z-index: 0;
+    }
+    
+    .page-header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        color: var(--gray);
+        margin-bottom: 2rem;
+        max-width: 600px;
+    }
+    
+    .search-box {
+        max-width: 600px;
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+        display: flex;
+        box-shadow: var(--shadow);
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .search-box:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .search-input {
+        flex: 1;
+        border: none;
+        padding: 1rem;
+        border-radius: var(--radius);
+        font-size: 1rem;
+        outline: none;
+        background: transparent;
+    }
+    
+    /* Filters Sidebar */
+    .filters-sidebar {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        height: fit-content;
+        position: sticky;
+        top: 6rem;
+    }
+    
+    .filter-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .filter-section:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .filter-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .filter-reset {
+        color: var(--primary);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .filter-reset:hover {
+        text-decoration: underline;
+    }
+    
+    .filter-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .filter-option {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 0.3rem 0;
+        font-size: 0.9rem;
+    }
+    
+    .filter-option:hover {
+        color: var(--primary);
+    }
+    
+    .filter-checkbox {
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--border);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+    
+    .filter-option input {
+        display: none;
+    }
+    
+    .filter-option input:checked + .filter-checkbox {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .filter-option input:checked + .filter-checkbox::after {
+        content: '✓';
+        color: var(--white);
+        font-size: 0.8rem;
+    }
+    
+    .filter-count {
+        color: var(--gray);
+        font-size: 0.8rem;
+        margin-right: auto;
+    }
+    
+    /* Results Section */
+    .results-section {
+        min-height: 500px;
+    }
+    
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .results-count {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 1rem;
+    }
+    
+    .sort-options {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .sort-select {
+        padding: 0.7rem 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: var(--white);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+    
+    .sort-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .view-options {
+        display: flex;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .view-option {
+        padding: 0.7rem;
+        background: var(--white);
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--gray);
+    }
+    
+    .view-option.active {
+        background: var(--primary);
+        color: var(--white);
+    }
+    
+    .view-option:not(.active):hover {
+        background: rgba(67, 97, 238, 0.05);
+        color: var(--primary);
+    }
+    
+    /* Blogs Grid */
+    .blogs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        transition: all 0.3s ease; /* افزودن transition برای تغییر نرم */
+    }
+    
+    .blogs-grid.list-view {
+        grid-template-columns: 1fr;
+    }
+    
+    .blogs-grid.list-view .blog-card {
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .blogs-grid.list-view .blog-image {
+        width: 180px;
+        height: 120px;
+        flex-shrink: 0;
+        border-radius: var(--radius);
+    }
+    
+    .blogs-grid.list-view .blog-content {
+        flex: 1;
+        padding: 0;
+    }
+    
+    .blogs-grid.list-view .blog-footer {
+        flex-direction: row;
+        align-items: center;
+        padding-top: 0;
+        border-top: none;
+    }
+    
+    .blog-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .blog-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        border-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .blog-image {
+        height: 180px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .blog-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--primary);
+        color: var(--white);
+        padding: 0.3rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .blog-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    
+    .blog-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+        line-height: 1.3;
+    }
+    
+    .blog-category {
+        color: var(--primary);
+        font-weight: 500;
+        margin-bottom: 1rem;
+        display: inline-block;
+        font-size: 0.9rem;
+    }
+    
+    .blog-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray);
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .blog-description {
+        color: var(--gray);
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+        line-height: 1.5;
+    }
+    
+    .blog-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .btn {
+        padding: 0.7rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+    
+    .btn-outline:hover {
+        background: rgba(67, 97, 238, 0.05);
+    }
+    
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .pagination-item {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        color: var(--dark);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    
+    .pagination-item:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .pagination-item.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--white);
+    }
+    
+    /* Mobile Filters */
+    .mobile-filters-btn {
+        display: none;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        justify-content: center;
+    }
+    
+    .mobile-filters-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+    }
+    
+    .mobile-filters-sidebar {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 85%;
+        max-width: 320px;
+        height: 100%;
+        background: var(--white);
+        z-index: 2001;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+    
+    .mobile-filters-sidebar.active {
+        right: 0;
+    }
+    
+    .mobile-filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .close-filters {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray);
+        padding: 0.5rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray);
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: var(--border);
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--dark);
+    }
+    
+    /* Filter Icon and Panel */
+    .filter-icon-container {
+        position: relative;
+    }
+    
+    .filter-icon-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1rem;
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--dark);
+        font-weight: 500;
+    }
+    
+    .filter-icon-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .filter-panel {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 0.5rem;
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        width: 280px;
+        z-index: 100;
+        display: none;
+        border: 1px solid var(--border);
+    }
+    
+    .filter-panel.active {
+        display: block;
+    }
+    
+    .filter-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .filter-panel-title {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 1.1rem;
+    }
+    
+    .close-filter-panel {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: var(--gray);
+        padding: 0.3rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .blog-list-container {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .filters-sidebar {
+            display: none;
+        }
+        
+        .mobile-filters-btn {
+            display: flex;
+        }
+        
+        .blogs-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 4rem 0 2rem;
+            margin-top: -1rem;
+        }
+        
+        .page-title {
+            font-size: 1.7rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+        }
+        
+        .results-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        
+        .sort-options {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .sort-select {
+            min-width: 150px;
+            flex-grow: 1;
+        }
+        
+        .blogs-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .blogs-grid.list-view .blog-card {
+            flex-direction: column; /* در موبایل، کارت‌ها در حالت لیست عمودی باشند */
+            align-items: stretch;
+            padding: 1rem;
+        }
+        
+        .blogs-grid.list-view .blog-image {
+            width: 100%;
+            height: 150px;
+            border-radius: var(--radius);
+        }
+        
+        .blogs-grid.list-view .blog-content {
+            padding: 1rem;
+        }
+        
+        .blogs-grid.list-view .blog-footer {
+            flex-direction: column;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .blog-footer {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        
+        .blog-footer .btn {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .filter-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-header-content {
+            padding: 0 1rem;
+        }
+        
+        .blog-list-container {
+            padding: 0.5rem;
+        }
+        
+        .sort-options {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .sort-select {
+            width: 100%;
+        }
+        
+        .view-options {
+            align-self: center;
+        }
+        
+        .blog-image {
+            height: 150px;
+        }
+        
+        .blog-content {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">{% trans "لیست وبلاگ‌ها" %}</h1>
+        <p class="page-subtitle">{% trans "اطلاعات موردنیاز خود را درباره وبلاگ‌ها پیدا کنید" %}</p>
+        
+        <form class="search-box" method="GET">
+            <input type="text" name="search" class="search-input" placeholder="{% trans 'جستجو...' %}" value="{{ current_search }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i>
+                {% trans "جستجو" %}
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- Results Section -->
+<main class="results-section">
+    <div class="results-header">
+        <div class="results-count">{{ blogs.count }} {% trans "مورد یافت شد" %}</div>
+        <div class="sort-options">
+            <div class="filter-icon-container">
+                <button class="filter-icon-btn" id="filterIconBtn">
+                    <i class="fas fa-filter"></i>
+                    {% trans "فیلتر" %}
+                </button>
+                <div class="filter-panel" id="filterPanel">
+                    <div class="filter-panel-header">
+                        <h3 class="filter-panel-title">{% trans "فیلتر دسته‌بندی‌ها" %}</h3>
+                        <button class="close-filter-panel" id="closeFilterPanel">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form method="GET">
+                        <div class="filter-section">
+                            <h3 class="filter-title">
+                                {% trans "دسته‌بندی‌ها" %}
+                                <a href="{% url 'blog:send_list' %}" class="filter-reset">{% trans "پاک کردن" %}</a>
+                            </h3>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" name="category[]" value="all" {% if 'all' in current_categories %}checked{% endif %}>
+                                    <span class="filter-checkbox"></span>
+                                    <span>{% trans "همه دسته‌بندی‌ها" %}</span>
+                                    <span class="filter-count">({{ blogs.count }})</span>
+                                </label>
+                                {% for category in categories %}
+                                    <label class="filter-option">
+                                        <input type="checkbox" name="category[]" value="{{ category.slug }}" {% if category.slug in current_categories %}checked{% endif %}>
+                                        <span class="filter-checkbox"></span>
+                                        <span>{{ category.name }}</span>
+                                        <span class="filter-count">({{ category.count|default:0 }})</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">{% trans "اعمال فیلترها" %}</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="view-options">
+                <button class="view-option active" data-view="grid">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="view-option" data-view="list">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="blogs-grid">
+        {% for blog in blogs %}
+            <div class="blog-card">
+                <div class="blog-image" style="background-image: url('{% if blog.images.first %}{{ blog.images.first.image.url }}{% else %}https://via.placeholder.com/800x180{% endif %}')">
+                    {% if blog.created_at|timesince:'days' < '7' %}
+                        <div class="blog-badge">{% trans "جدید" %}</div>
+                    {% endif %}
+                </div>
+                <div class="blog-content">
+                    <h3 class="blog-title">{{ blog.title }}</h3>
+                    <span class="blog-category">{{ blog.category.name|default:_('بدون دسته‌بندی') }}</span>
+                    <div class="blog-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ blog.address|default:_('بدون آدرس') }}</span>
+                    </div>
+                    <p class="blog-description">{{ blog.content|truncatewords:20 }}</p>
+                    <div class="blog-footer">
+                        <a href="{% url 'blog:send_detail' blog.slug %}" class="btn btn-outline">{% trans "مشاهده جزئیات" %}</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>{% trans "هیچ وبلاگی یافت نشد" %}</h3>
+                <p>{% trans "متأسفانه با فیلترهای انتخابی شما هیچ نتیجه‌ای پیدا نشد." %}</p>
+                <a href="{% url 'blog:send_list' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                    {% trans "نمایش همه" %}
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if blogs.has_other_pages %}
+        <div class="pagination">
+            {% if blogs.has_previous %}
+                <a href="?page={{ blogs.previous_page_number }}{% if current_categories %}&category[]={{ current_categories|join:'&category[]=' }}{% endif %}{% if current_cities %}&city[]={{ current_cities|join:'&city[]=' }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="pagination-item">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+            
+            {% for i in blogs.paginator.page_range %}
+                {% if blogs.number == i %}
+                    <span class="pagination-item active">{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}{% if current_categories %}&category[]={{ current_categories|join:'&category[]=' }}{% endif %}{% if current_cities %}&city[]={{ current_cities|join:'&city[]=' }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="pagination-item">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if blogs.has_next %}
+                <a href="?page={{ blogs.next_page_number }}{% if current_categories %}&category[]={{ current_categories|join:'&category[]=' }}{% endif %}{% if current_cities %}&city[]={{ current_cities|join:'&city[]=' }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="pagination-item">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</main>
+
+<!-- Mobile Filters Overlay and Sidebar -->
+<div class="mobile-filters-overlay" id="mobileFiltersOverlay"></div>
+<div class="mobile-filters-sidebar" id="mobileFiltersSidebar">
+    <div class="mobile-filters-header">
+        <h3>{% trans "فیلترها" %}</h3>
+        <button class="close-filters" id="closeFilters">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <form method="GET">
+        <div class="filter-section">
+            <h3 class="filter-title">
+                {% trans "دسته‌بندی‌ها" %}
+                <a href="{% url 'blog:send_list' %}" class="filter-reset">{% trans "پاک کردن" %}</a>
+            </h3>
+            <div class="filter-options">
+                <label class="filter-option">
+                    <input type="checkbox" name="category[]" value="all" {% if 'all' in current_categories %}checked{% endif %}>
+                    <span class="filter-checkbox"></span>
+                    <span>{% trans "همه دسته‌بندی‌ها" %}</span>
+                    <span class="filter-count">({{ blogs.count }})</span>
+                </label>
+                {% for category in categories %}
+                    <label class="filter-option">
+                        <input type="checkbox" name="category[]" value="{{ category.slug }}" {% if category.slug in current_categories %}checked{% endif %}>
+                        <span class="filter-checkbox"></span>
+                        <span>{{ category.name }}</span>
+                        <span class="filter-count">({{ category.count|default:0 }})</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">{% trans "اعمال فیلترها" %}</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileFiltersBtn = document.getElementById('mobileFiltersBtn');
+    const mobileFiltersOverlay = document.getElementById('mobileFiltersOverlay');
+    const mobileFiltersSidebar = document.getElementById('mobileFiltersSidebar');
+    const closeFilters = document.getElementById('closeFilters');
+    
+    // Filter icon functionality
+    const filterIconBtn = document.getElementById('filterIconBtn');
+    const filterPanel = document.getElementById('filterPanel');
+    const closeFilterPanel = document.getElementById('closeFilterPanel');
+    
+    if (filterIconBtn) {
+        filterIconBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterPanel.classList.toggle('active');
+        });
+    }
+    
+    if (closeFilterPanel) {
+        closeFilterPanel.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterPanel.classList.remove('active');
+        });
+    }
+    
+    // Close filter panel when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!filterPanel.contains(e.target) && e.target !== filterIconBtn) {
+            filterPanel.classList.remove('active');
+        }
+    });
+    
+    // Mobile filters functionality
+    if (mobileFiltersBtn) {
+        mobileFiltersBtn.addEventListener('click', function() {
+            mobileFiltersOverlay.style.display = 'block';
+            mobileFiltersSidebar.classList.add('active');
+        });
+    }
+    
+    if (closeFilters) {
+        closeFilters.addEventListener('click', function() {
+            mobileFiltersOverlay.style.display = 'none';
+            mobileFiltersSidebar.classList.remove('active');
+        });
+    }
+    
+    if (mobileFiltersOverlay) {
+        mobileFiltersOverlay.addEventListener('click', function() {
+            mobileFiltersOverlay.style.display = 'none';
+            mobileFiltersSidebar.classList.remove('active');
+        });
+    }
+    
+    // View options functionality
+    const viewOptions = document.querySelectorAll('.view-option');
+    const blogsGrid = document.querySelector('.blogs-grid');
+    
+    viewOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            viewOptions.forEach(opt => opt.classList.remove('active'));
+            this.classList.add('active');
+            
+            if (this.dataset.view === 'list') {
+                blogsGrid.classList.add('list-view');
+            } else {
+                blogsGrid.classList.remove('list-view');
+            }
+        });
+    });
+    
+    // Handle window resize to maintain view consistency
+    window.addEventListener('resize', function() {
+        const isListView = blogsGrid.classList.contains('list-view');
+        const gridButton = document.querySelector('.view-option[data-view="grid"]');
+        const listButton = document.querySelector('.view-option[data-view="list"]');
+        
+        if (window.innerWidth <= 768 && isListView) {
+            blogsGrid.classList.add('list-view');
+            listButton.classList.add('active');
+            gridButton.classList.remove('active');
+        } else if (window.innerWidth <= 768 && !isListView) {
+            blogsGrid.classList.remove('list-view');
+            gridButton.classList.add('active');
+            listButton.classList.remove('active');
+        }
+    });
+    
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                this.closest('form').submit();
+            }
+        });
+    }
+    
+    const categoryCheckboxes = document.querySelectorAll('input[name="category[]"]');
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.value === 'all' && this.checked) {
+                categoryCheckboxes.forEach(cb => {
+                    if (cb.value !== 'all') cb.checked = false;
+                });
+            } else if (this.value !== 'all' && this.checked) {
+                document.querySelector('input[name="category[]"][value="all"]').checked = false;
+            }
+        });
+    });
+});
+</script>
+{% endblock content %}

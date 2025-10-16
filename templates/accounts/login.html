@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}{{ business.name }}{% endblock title %}
+
+{% block content %}
+
+<style>
+    .auth-page {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: #f8f9fa;
+    }
+
+    .auth-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        outline: none;
+        background: white;
+        color: #333;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+        border-color: #4a6cf7;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: none;
+        background: #4a6cf7;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .btn:hover {
+        background: #3a5bd9;
+    }
+
+    .switch {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .switch p {
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .switch a {
+        color: #4a6cf7;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .switch a:hover {
+        text-decoration: underline;
+    }
+
+    .messages {
+        margin-bottom: 1rem;
+    }
+
+    .alert {
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .alert-error {
+        color: #d63031;
+        background: rgba(214, 48, 49, 0.1);
+    }
+
+    .alert-success {
+        color: #00b894;
+        background: rgba(0, 184, 148, 0.1);
+    }
+
+    .form-wrapper {
+        display: none;
+    }
+
+    .form-wrapper.active {
+        display: block;
+    }
+
+    .errorlist {
+        list-style: none;
+        color: #d63031;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: rgba(214, 48, 49, 0.1);
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+
+    .password-field {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #777;
+        cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+        .auth-page {
+            padding: 1rem;
+        }
+        
+        .auth-container {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<div class="auth-page">
+    <div class="auth-container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- فرم ورود -->
+        <div id="loginForm" class="form-wrapper active">
+            <h2>{% trans "ورود به حساب" %}</h2>
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                
+                {% if login_form.username.errors %}
+                    <div class="errorlist">
+                        {% for error in login_form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <input type="text" name="username" class="form-input" placeholder="{% trans 'نام کاربری یا ایمیل' %}" required
+                           value="{{ login_form.username.value|default:'' }}">
+                </div>
+                
+                {% if login_form.password.errors %}
+                    <div class="errorlist">
+                        {% for error in login_form.password.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="form-group password-field">
+                    <input type="password" name="password" class="form-input" placeholder="{% trans 'رمز عبور' %}" required
+                           id="loginPassword">
+                    <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                
+                {% if login_form.non_field_errors %}
+                    <div class="errorlist">
+                        {% for error in login_form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <button type="submit" class="btn">
+                    {% trans "ورود" %}
+                </button>
+            </form>
+            <div class="switch">
+                <p>{% trans "حساب ندارید؟" %}</p>
+                <a href="#" onclick="toggleForm('register')">{% trans "ثبت‌نام کنید" %}</a>
+            </div>
+        </div>
+
+        <!-- فرم ثبت‌نام -->
+        <div id="registerForm" class="form-wrapper">
+            <h2>{% trans "ثبت‌نام" %}</h2>
+            <form method="post" action="{% url 'accounts:register' %}">
+                {% csrf_token %}
+                
+                {% for field in register_form %}
+                    {% if field.errors %}
+                        <div class="errorlist">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="form-group {% if field.name in 'password1,password2' %}password-field{% endif %}">
+                        {% if field.name == 'username' %}
+                            <input type="text" name="{{ field.name }}" class="form-input" placeholder="{% trans 'نام کاربری' %}" required
+                                   value="{{ field.value|default:'' }}">
+                        {% elif field.name == 'email' %}
+                            <input type="email" name="{{ field.name }}" class="form-input" placeholder="{% trans 'ایمیل' %}" required
+                                   value="{{ field.value|default:'' }}">
+                        {% elif field.name == 'first_name' %}
+                            <input type="text" name="{{ field.name }}" class="form-input" placeholder="{% trans 'نام کامل' %}"
+                                   value="{{ field.value|default:'' }}">
+                        {% elif field.name == 'phone_number' %}
+                            <input type="tel" name="{{ field.name }}" class="form-input" placeholder="{% trans 'شماره تلفن' %}"
+                                   value="{{ field.value|default:'' }}">
+                        {% elif field.name == 'password1' %}
+                            <input type="password" name="{{ field.name }}" class="form-input" placeholder="{% trans 'رمز عبور' %}" required
+                                   id="registerPassword1">
+                            <button type="button" class="toggle-password" onclick="togglePassword('registerPassword1')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        {% elif field.name == 'password2' %}
+                            <input type="password" name="{{ field.name }}" class="form-input" placeholder="{% trans 'تکرار رمز عبور' %}" required
+                                   id="registerPassword2">
+                            <button type="button" class="toggle-password" onclick="togglePassword('registerPassword2')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                {% if register_form.non_field_errors %}
+                    <div class="errorlist">
+                        {% for error in register_form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <button type="submit" class="btn">
+                    {% trans "ثبت‌نام" %}
+                </button>
+            </form>
+            <div class="switch">
+                <p>{% trans "قبلاً ثبت‌نام کرده‌اید؟" %}</p>
+                <a href="#" onclick="toggleForm('login')">{% trans "ورود کنید" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleForm(target) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        if (target === 'register') {
+            loginForm.classList.remove('active');
+            registerForm.classList.add('active');
+        } else {
+            registerForm.classList.remove('active');
+            loginForm.classList.add('active');
+        }
+    }
+
+    function togglePassword(inputId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleBtn = passwordInput.nextElementSibling;
+        const icon = toggleBtn.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+
+{% endblock content %}
