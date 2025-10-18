@@ -1,9 +1,11 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class Schedule(models.Model):
+    """مدل برای تعریف زنگ‌های کلاسی"""
     ZENG_CHOICES = (
         (1, 'Period 1'),
         (2, 'Period 2'),
@@ -18,6 +20,9 @@ class Schedule(models.Model):
     class Meta:
         verbose_name = "Schedule"
         verbose_name_plural = "Schedules"
+        indexes = [
+            models.Index(fields=['zeng']),
+        ]
 
     def __str__(self):
         if self.zeng == 5:
@@ -25,6 +30,7 @@ class Schedule(models.Model):
         return f"{self.get_zeng_display()} ({self.start_time} - {self.end_time})"
 
     def is_active(self):
+        """بررسی فعال بودن زنگ بر اساس زمان فعلی"""
         if self.zeng == 5:
             return True
         now = timezone.localtime(timezone.now()).time()
@@ -32,17 +38,22 @@ class Schedule(models.Model):
 
 
 class Class(models.Model):
+    """مدل برای تعریف کلاس‌ها"""
     name = models.CharField(max_length=100, verbose_name="Class Name")
 
     class Meta:
         verbose_name = "Class"
         verbose_name_plural = "Classes"
+        indexes = [
+            models.Index(fields=['name']),
+        ]
 
     def __str__(self):
         return self.name
 
 
 class Student(models.Model):
+    """مدل برای تعریف دانش‌آموزان"""
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='students', verbose_name="Class")
     row_number = models.PositiveIntegerField(verbose_name="Row Number")
     first_name = models.CharField(max_length=50, verbose_name="First Name")
@@ -52,12 +63,16 @@ class Student(models.Model):
     class Meta:
         verbose_name = "Student"
         verbose_name_plural = "Students"
+        indexes = [
+            models.Index(fields=['first_name', 'last_name']),
+        ]
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
 
 class ClassSchedule(models.Model):
+    """مدل برای تعریف برنامه کلاسی"""
     DAY_CHOICES = (
         ('Sat', 'Saturday'),
         ('Sun', 'Sunday'),
@@ -77,18 +92,30 @@ class ClassSchedule(models.Model):
     class Meta:
         verbose_name = "Class Schedule"
         verbose_name_plural = "Class Schedules"
+        indexes = [
+            models.Index(fields=['class_obj', 'schedule', 'day']),
+        ]
+
+    def clean(self):
+        """اعتبارسنجی یکپارچگی داده‌ها"""
+        if self.is_split and self.split_part not in [1, 2]:
+            raise ValidationError("برای زنگ‌های تقسیم‌شده، split_part باید 1 یا 2 باشد.")
+        if not self.is_split and self.split_part != 0:
+            raise ValidationError("برای زنگ‌های غیرتقسیم‌شده، split_part باید 0 باشد.")
 
     def __str__(self):
         if self.is_split:
-            return f"{self.class_obj} - {self.schedule} - {self.get_day_display()} - {self.teacher} ({self.subject} - Part {self.split_part})"
-        return f"{self.class_obj} - {self.schedule} - {self.get_day_display()} - {self.teacher} ({self.subject})"
+            return f"{self.class_obj} - {self.schedule.get_zeng_display()} - {self.get_day_display()} - {self.teacher} ({self.subject} - Part {self.split_part})"
+        return f"{self.class_obj} - {self.schedule.get_zeng_display()} - {self.get_day_display()} - {self.teacher} ({self.subject})"
 
     def is_active(self):
+        """بررسی فعال بودن برنامه کلاسی"""
         today = timezone.now().strftime('%a')[:3]
         return self.day == today and (self.schedule.zeng == 5 or self.schedule.is_active())
 
 
 class Attendance(models.Model):
+    """مدل برای ثبت حضور و غیاب"""
     STATUS_CHOICES = (
         ('P', 'Present'),
         ('A', 'Absent'),
@@ -102,6 +129,9 @@ class Attendance(models.Model):
     class Meta:
         verbose_name = "Attendance"
         verbose_name_plural = "Attendances"
+        indexes = [
+            models.Index(fields=['student', 'date']),
+        ]
 
     def __str__(self):
         return f"{self.student} - {self.get_status_display()} ({self.date})"

@@ -1,547 +1,353 @@
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برنامه هفتگی | سامانه آموزشی</title>
-    <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #7209b7;
-            --success: #4cc9f0;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --white: #ffffff;
-            --gray: #6c757d;
-            --border: #e9ecef;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            --radius: 16px;
-            --transition: all 0.3s ease;
-        }
-        
-        body {
-            font-family: 'Vazir', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
-            direction: rtl;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-        
-        .page-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 4rem 0 2rem;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-        
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 70%;
-            height: 150%;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-            border-radius: 50%;
-            z-index: 0;
-        }
-        
-        .page-header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .page-title {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: var(--white);
-            text-align: center;
-        }
-        
-        .page-subtitle {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 1rem 3rem;
-        }
-        
-        .class-selector {
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.7rem;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 1rem;
-        }
-        
-        .form-select {
-            padding: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: var(--transition);
-            background: var(--white);
-            width: 100%;
-            max-width: 400px;
-            cursor: pointer;
-        }
-        
-        .form-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-        
-        .schedule-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-        
-        .schedule-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--white);
-            padding: 1.5rem;
-        }
-        
-        .schedule-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.7rem;
-        }
-        
-        .schedule-container {
-            overflow-x: auto;
-            padding: 1.5rem;
-        }
-        
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            min-width: 800px;
-        }
-        
-        .schedule-table th {
-            background: var(--light);
-            color: var(--dark);
-            font-weight: 600;
-            padding: 1.2rem;
-            text-align: center;
-            border-bottom: 2px solid var(--border);
-            font-size: 0.95rem;
-        }
-        
-        .schedule-table td {
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-            vertical-align: top;
-        }
-        
-        .schedule-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .day-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--white);
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        
-        .period-cell {
-            min-height: 180px;
-            background: var(--white);
-            transition: var(--transition);
-        }
-        
-        .period-cell:hover {
-            background: rgba(67, 97, 238, 0.03);
-        }
-        
-        .split-toggle {
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--dark);
-            font-weight: 500;
-        }
-        
-        .checkbox-label input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .split-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .split-half {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            background: var(--light);
-        }
-        
-        .split-half-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 0.7rem;
-            color: var(--primary);
-            text-align: center;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: var(--transition);
-            background: var(--white);
-            margin-bottom: 0.7rem;
-            box-sizing: border-box;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
-        }
-        
-        .form-input::placeholder {
-            color: var(--gray);
-            opacity: 0.7;
-        }
-        
-        .btn {
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--white);
-            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
-        }
-        
-        .form-actions {
-            text-align: center;
-            margin-top: 2rem;
-        }
-        
-        /* Responsive Design */
-        @media (min-width: 768px) {
-            .split-container {
-                flex-direction: row;
-            }
-            
-            .split-half {
-                flex: 1;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .page-header {
-                padding: 3rem 0 1.5rem;
-            }
-            
-            .page-title {
-                font-size: 1.7rem;
-            }
-            
-            .page-subtitle {
-                font-size: 1rem;
-            }
-            
-            .schedule-container {
-                padding: 1rem;
-            }
-            
-            .schedule-table th, 
-            .schedule-table td {
-                padding: 0.8rem;
-            }
-            
-            .period-cell {
-                min-height: 200px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .page-header-content {
-                padding: 0 1rem;
-            }
-            
-            .container {
-                padding: 0 0.5rem 2rem;
-            }
-            
-            .class-selector {
-                padding: 1rem;
-            }
-            
-            .schedule-header {
-                padding: 1rem;
-            }
-            
-            .schedule-title {
-                font-size: 1.3rem;
-            }
-            
-            .schedule-table th, 
-            .schedule-table td {
-                padding: 0.6rem;
-                font-size: 0.85rem;
-            }
-            
-            .split-half {
-                padding: 0.8rem;
-            }
-            
-            .form-input {
-                padding: 0.7rem;
-                font-size: 0.85rem;
-            }
-            
-            .btn {
-                padding: 0.8rem 1.5rem;
-                font-size: 0.9rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Page Header -->
-    <section class="page-header">
-        <div class="page-header-content">
-            <h1 class="page-title">برنامه هفتگی</h1>
-            <p class="page-subtitle">مدیریت و تنظیم برنامه درسی کلاس‌ها</p>
-        </div>
-    </section>
-    
-    <div class="container">
-        <!-- Class Selector -->
-        <div class="class-selector">
-            <form method="get">
-                <label for="class_id" class="form-label">انتخاب کلاس</label>
-                <select name="class_id" id="class_id" class="form-select" onchange="this.form.submit()">
-                    <option value="">-- انتخاب کنید --</option>
-                    {% for class in classes %}
-                        <option value="{{ class.id }}" {% if selected_class.id == class.id %}selected{% endif %}>
-                            {{ class.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
-        
-        {% if selected_class %}
-            <!-- Schedule Table -->
-            <div class="schedule-card">
-                <div class="schedule-header">
-                    <h2 class="schedule-title">
-                        <i class="fas fa-calendar-alt"></i>
-                        برنامه هفتگی کلاس: {{ selected_class.name }}
-                    </h2>
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="schedule-container">
-                        <table class="schedule-table">
-                            <thead>
-                                <tr>
-                                    <th>روز / زنگ</th>
-                                    {% for zeng in zengs %}
-                                        <th>{{ zeng.get_zeng_display }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for schedule in schedules %}
-                                    <tr>
-                                        <td class="day-header">{{ schedule.day_name }}</td>
-                                        {% for period in schedule.periods %}
-                                            <td class="period-cell">
-                                                {% if period.is_split %}
-                                                    <div class="split-toggle">
-                                                        <label class="checkbox-label">
-                                                            <input type="checkbox" name="split_{{ schedule.day }}_{{ period.zeng.id }}"
-                                                                {% if period.is_split %}checked{% endif %}> 
-                                                            تقسیم زنگ
-                                                        </label>
-                                                    </div>
-                                                    <div class="split-container">
-                                                        <div class="split-half">
-                                                            <div class="split-half-title">نیمه اول</div>
-                                                            <select name="teacher1_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input">
-                                                                <option value="">-- معلم --</option>
-                                                                {% for teacher in teachers %}
-                                                                    <option value="{{ teacher.id }}"
-                                                                        {% if period.first_half and period.first_half.teacher.id == teacher.id %}selected{% endif %}>
-                                                                        {{ teacher.get_full_name|default:teacher.username }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                            <input type="text" name="subject1_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input"
-                                                                value="{% if period.first_half %}{{ period.first_half.subject }}{% endif %}" placeholder="درس">
-                                                            <input type="text" name="unit1_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input"
-                                                                value="{% if period.first_half %}{{ period.first_half.unit }}{% endif %}" placeholder="واحد">
-                                                        </div>
-                                                        <div class="split-half">
-                                                            <div class="split-half-title">نیمه دوم</div>
-                                                            <select name="teacher2_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input">
-                                                                <option value="">-- معلم --</option>
-                                                                {% for teacher in teachers %}
-                                                                    <option value="{{ teacher.id }}"
-                                                                        {% if period.second_half and period.second_half.teacher.id == teacher.id %}selected{% endif %}>
-                                                                        {{ teacher.get_full_name|default:teacher.username }}
-                                                                    </option>
-                                                                {% endfor %}
-                                                            </select>
-                                                            <input type="text" name="subject2_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input"
-                                                                value="{% if period.second_half %}{{ period.second_half.subject }}{% endif %}" placeholder="درس">
-                                                            <input type="text" name="unit2_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input"
-                                                                value="{% if period.second_half %}{{ period.second_half.unit }}{% endif %}" placeholder="واحد">
-                                                        </div>
-                                                    </div>
-                                                {% else %}
-                                                    <div class="split-toggle">
-                                                        <label class="checkbox-label">
-                                                            <input type="checkbox" name="split_{{ schedule.day }}_{{ period.zeng.id }}"> 
-                                                            تقسیم زنگ
-                                                        </label>
-                                                    </div>
-                                                    <select name="teacher_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input">
-                                                        <option value="">-- معلم --</option>
-                                                        {% for teacher in teachers %}
-                                                            <option value="{{ teacher.id }}"
-                                                                {% if period.schedule and period.schedule.teacher.id == teacher.id %}selected{% endif %}>
-                                                                {{ teacher.get_full_name|default:teacher.username }}
-                                                            </option>
-                                                        {% endfor %}
-                                                    </select>
-                                                    <input type="text" name="subject_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input"
-                                                        value="{% if period.schedule %}{{ period.schedule.subject }}{% endif %}" placeholder="درس">
-                                                    <input type="text" name="unit_{{ schedule.day }}_{{ period.zeng.id }}" class="form-input"
-                                                        value="{% if period.schedule %}{{ period.schedule.unit }}{% endif %}" placeholder="واحد">
-                                                {% endif %}
-                                            </td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <input type="hidden" name="class_id" value="{{ selected_class.id }}">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
-                            ثبت برنامه هفتگی
-                        </button>
-                    </div>
-                </form>
-            </div>
-        {% endif %}
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}برنامه هفتگی | سامانه حضور و غیاب{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee;
+        --secondary: #3a0ca3;
+        --accent: #7209b7;
+        --success: #4cc9f0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e9ecef;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --radius: 16px;
+        --transition: all 0.3s ease;
+    }
+
+    .page-header {
+        text-align: center;
+        padding: 30px 0;
+    }
+
+    .page-title {
+        font-size: 28px;
+        color: var(--dark);
+        margin-bottom: 10px;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: var(--gray);
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .class-selector {
+        margin-bottom: 20px;
+    }
+
+    .class-selector select {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+        width: 200px;
+    }
+
+    .schedule-table-container {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+    }
+
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .schedule-table th, .schedule-table td {
+        padding: 15px;
+        text-align: center;
+        border: 1px solid var(--border);
+    }
+
+    .schedule-table th {
+        background: var(--light);
+        color: var(--dark);
+        font-weight: bold;
+    }
+
+    .period-cell {
+        position: relative;
+    }
+
+    .period-cell select, .period-cell input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .split-checkbox {
+        margin: 10px 0;
+    }
+
+    .split-container {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .split-section {
+        display: flex;
+        gap: 10px;
+    }
+
+    .split-section select, .split-section input {
+        flex: 1;
+    }
+
+    .alert {
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+
+    .submit-section {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: var(--white);
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary);
+    }
+</style>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">برنامه هفتگی</h1>
+        <p class="page-subtitle">مدیریت برنامه هفتگی کلاس‌ها</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Class Selector -->
+    <div class="class-selector">
+        <form id="classSelectForm" method="get">
+            <select name="class_id" onchange="this.form.submit()">
+                <option value="">انتخاب کلاس</option>
+                {% for class in classes %}
+                    <option value="{{ class.id }}" {% if class.id == selected_class.id %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add visual feedback for split toggles
-            const splitCheckboxes = document.querySelectorAll('input[type="checkbox"][name^="split_"]');
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if selected_class %}
+        <!-- Schedule Form -->
+        <form method="post" id="scheduleForm">
+            {% csrf_token %}
+            <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+            <div class="schedule-table-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>روز</th>
+                            {% for zeng in zengs %}
+                                <th>{{ zeng.get_zeng_display }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                            <tr>
+                                <td>{{ schedule.day_name }}</td>
+                                {% for period in schedule.periods %}
+                                    <td class="period-cell">
+                                        {% if period.is_split %}
+                                            <input type="checkbox" name="split_{{ schedule.day }}_{{ period.zeng.id }}" checked
+                                                class="split-checkbox">
+                                        {% else %}
+                                            <input type="checkbox" name="split_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                class="split-checkbox">
+                                        {% endif %}
+                                        
+                                        <!-- Regular Fields -->
+                                        <select name="teacher_{{ schedule.day }}_{{ period.zeng.id }}"
+                                            class="form-input" {% if period.is_split %}style="display: none;"{% endif %}>
+                                            <option value="">انتخاب معلم</option>
+                                            {% for teacher in teachers %}
+                                                <option value="{{ teacher.id }}"
+                                                    {% if period.schedule and period.schedule.teacher.id == teacher.id %}selected{% endif %}>
+                                                    {{ teacher.get_full_name|default:teacher.username }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="text" name="subject_{{ schedule.day }}_{{ period.zeng.id }}"
+                                            value="{% if period.schedule %}{{ period.schedule.subject }}{% endif %}"
+                                            placeholder="درس" class="form-input"
+                                            {% if period.is_split %}style="display: none;"{% endif %}>
+                                        <input type="text" name="unit_{{ schedule.day }}_{{ period.zeng.id }}"
+                                            value="{% if period.schedule %}{{ period.schedule.unit }}{% endif %}"
+                                            placeholder="واحد" class="form-input"
+                                            {% if period.is_split %}style="display: none;"{% endif %}>
+                                        
+                                        <!-- Split Fields -->
+                                        <div class="split-container" {% if not period.is_split %}style="display: none;"{% endif %}>
+                                            <div class="split-section">
+                                                <h4>نیمه اول</h4>
+                                                <select name="teacher1_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                    class="form-input">
+                                                    <option value="">انتخاب معلم</option>
+                                                    {% for teacher in teachers %}
+                                                        <option value="{{ teacher.id }}"
+                                                            {% if period.first_half and period.first_half.teacher.id == teacher.id %}selected{% endif %}>
+                                                            {{ teacher.get_full_name|default:teacher.username }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="text" name="subject1_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                    value="{% if period.first_half %}{{ period.first_half.subject }}{% endif %}"
+                                                    placeholder="درس" class="form-input">
+                                                <input type="text" name="unit1_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                    value="{% if period.first_half %}{{ period.first_half.unit }}{% endif %}"
+                                                    placeholder="واحد" class="form-input">
+                                            </div>
+                                            <div class="split-section">
+                                                <h4>نیمه دوم</h4>
+                                                <select name="teacher2_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                    class="form-input">
+                                                    <option value="">انتخاب معلم</option>
+                                                    {% for teacher in teachers %}
+                                                        <option value="{{ teacher.id }}"
+                                                            {% if period.second_half and period.second_half.teacher.id == teacher.id %}selected{% endif %}>
+                                                            {{ teacher.get_full_name|default:teacher.username }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="text" name="subject2_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                    value="{% if period.second_half %}{{ period.second_half.subject }}{% endif %}"
+                                                    placeholder="درس" class="form-input">
+                                                <input type="text" name="unit2_{{ schedule.day }}_{{ period.zeng.id }}"
+                                                    value="{% if period.second_half %}{{ period.second_half.unit }}{% endif %}"
+                                                    placeholder="واحد" class="form-input">
+                                            </div>
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="submit-section">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> ثبت برنامه
+                </button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle split checkbox toggle
+    const splitCheckboxes = document.querySelectorAll('.split-checkbox');
+    splitCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const cell = this.closest('.period-cell');
+            const splitContainer = cell.querySelector('.split-container');
+            const regularFields = cell.querySelectorAll('select[name^="teacher_"], input[name^="subject_"], input[name^="unit_"]');
             
-            splitCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const cell = this.closest('.period-cell');
-                    if (this.checked) {
-                        cell.style.backgroundColor = 'rgba(76, 201, 240, 0.05)';
-                    } else {
-                        cell.style.backgroundColor = '';
-                    }
-                });
-                
-                // Initialize state
-                if (checkbox.checked) {
-                    const cell = checkbox.closest('.period-cell');
-                    cell.style.backgroundColor = 'rgba(76, 201, 240, 0.05)';
-                }
-            });
-            
-            // Add loading state to form submission
-            const scheduleForm = document.querySelector('form');
-            if (scheduleForm) {
-                scheduleForm.addEventListener('submit', function() {
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    if (submitBtn) {
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ثبت...';
-                        submitBtn.disabled = true;
-                    }
-                });
+            if (this.checked) {
+                splitContainer.style.display = 'flex';
+                regularFields.forEach(field => field.style.display = 'none');
+            } else {
+                splitContainer.style.display = 'none';
+                regularFields.forEach(field => field.style.display = 'block');
             }
         });
-    </script>
-</body>
-</html>
+    });
+
+    // Client-side validation
+    const form = document.getElementById('scheduleForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let valid = true;
+            splitCheckboxes.forEach(checkbox => {
+                const cell = checkbox.closest('.period-cell');
+                if (checkbox.checked) {
+                    const teacher1 = cell.querySelector('select[name^="teacher1_"]').value;
+                    const subject1 = cell.querySelector('input[name^="subject1_"]').value;
+                    const unit1 = cell.querySelector('input[name^="unit1_"]').value;
+                    if (!teacher1 || !subject1 || !unit1) {
+                        valid = false;
+                    }
+                } else {
+                    const teacher = cell.querySelector('select[name^="teacher_"]').value;
+                    const subject = cell.querySelector('input[name^="subject_"]').value;
+                    const unit = cell.querySelector('input[name^="unit_"]').value;
+                    if (teacher || subject || unit) {
+                        if (!teacher || !subject || !unit) {
+                            valid = false;
+                        }
+                    }
+                }
+            });
+            if (!valid) {
+                e.preventDefault();
+                alert('لطفاً تمام فیلدهای مورد نیاز را برای زنگ‌های انتخاب‌شده پر کنید.');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
