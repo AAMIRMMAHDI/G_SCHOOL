@@ -19,7 +19,7 @@ class Schedule(models.Model):
 
     class Meta:
         verbose_name = "Schedule"
-        verbose_name_plural = "Schedules"
+        verbose_name_plural = "زنگ"
         indexes = [
             models.Index(fields=['zeng']),
         ]
@@ -43,7 +43,7 @@ class Class(models.Model):
 
     class Meta:
         verbose_name = "Class"
-        verbose_name_plural = "Classes"
+        verbose_name_plural = "کلاس ها"
         indexes = [
             models.Index(fields=['name']),
         ]
@@ -62,7 +62,7 @@ class Student(models.Model):
 
     class Meta:
         verbose_name = "Student"
-        verbose_name_plural = "Students"
+        verbose_name_plural = "دانش آموز"
         indexes = [
             models.Index(fields=['first_name', 'last_name']),
         ]
@@ -91,7 +91,7 @@ class ClassSchedule(models.Model):
 
     class Meta:
         verbose_name = "Class Schedule"
-        verbose_name_plural = "Class Schedules"
+        verbose_name_plural = "کلاس های فعال"
         indexes = [
             models.Index(fields=['class_obj', 'schedule', 'day']),
         ]
@@ -128,7 +128,7 @@ class Attendance(models.Model):
 
     class Meta:
         verbose_name = "Attendance"
-        verbose_name_plural = "Attendances"
+        verbose_name_plural = "حضور غیاب"
         indexes = [
             models.Index(fields=['student', 'date']),
         ]

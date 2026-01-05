@@ -1,0 +1,660 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{{ blog.title }} | سامانه مدرسه{% endblock title %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4361ee; /* آبی مدرسه‌ای */
+        --secondary: #1a3d6c; /* آبی تیره */
+        --accent: #4a90e2; /* آبی روشن */
+        --success: #4CAF50; /* سبز */
+        --light: #f8f9fa;
+        --white: #ffffff;
+        --gray: #6c757d;
+        --border: #e0e0e0;
+        --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+        --border-radius: 12px;
+        --font-family: 'Vazir', 'Segoe UI', sans-serif;
+    }
+
+    .blog-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 15px;
+        direction: rtl;
+        font-family: var(--font-family);
+    }
+
+    /* هدر وبلاگ */
+    .blog-header {
+        background: var(--white);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 25px;
+        border-right: 5px solid var(--primary);
+    }
+
+    .blog-title {
+        color: var(--secondary);
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+
+    .blog-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: center;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+
+    .blog-category {
+        background: var(--primary);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .rating-stars {
+        color: #ffc107;
+        display: flex;
+        gap: 3px;
+    }
+
+    /* گالری */
+    .gallery-container {
+        margin: 25px 0;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 350px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        background: var(--light);
+        margin-bottom: 15px;
+    }
+
+    .main-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .thumbnails {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px 0;
+    }
+
+    .thumbnail {
+        width: 80px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: var(--transition);
+        flex-shrink: 0;
+    }
+
+    .thumbnail.active {
+        border-color: var(--primary);
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* محتوا */
+    .blog-content {
+        background: var(--white);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        margin: 25px 0;
+        line-height: 1.8;
+        color: #333;
+    }
+
+    /* تب‌ها */
+    .tabs {
+        margin: 30px 0;
+    }
+
+    .tab-buttons {
+        display: flex;
+        background: var(--light);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--gray);
+        transition: var(--transition);
+        text-align: center;
+    }
+
+    .tab-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .tab-panel {
+        display: none;
+        background: var(--white);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+    }
+
+    .tab-panel.active {
+        display: block;
+    }
+
+    /* نظرات */
+    .comment {
+        background: var(--light);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border-right: 3px solid var(--primary);
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .comment-user {
+        font-weight: bold;
+        color: var(--secondary);
+    }
+
+    .comment-form {
+        background: var(--white);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        margin-top: 30px;
+    }
+
+    .comment-form textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin: 10px 0;
+        font-family: var(--font-family);
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .comment-form button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    /* وبلاگ‌های مشابه */
+    .similar-blogs {
+        margin: 40px 0;
+    }
+
+    .similar-title {
+        color: var(--secondary);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary);
+    }
+
+    .similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .similar-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+
+    .similar-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .similar-img {
+        height: 150px;
+        overflow: hidden;
+    }
+
+    .similar-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .similar-card:hover .similar-img img {
+        transform: scale(1.05);
+    }
+
+    .similar-info {
+        padding: 15px;
+    }
+
+    .similar-name {
+        color: var(--secondary);
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+
+    .similar-name a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* ریسپانسیو */
+    @media (min-width: 768px) {
+        .blog-main {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        
+        .gallery-container {
+            grid-column: 1 / -1;
+        }
+        
+        .blog-content {
+            margin: 0;
+        }
+        
+        .tabs {
+            grid-column: 1;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .blog-title {
+            font-size: 1.4rem;
+        }
+        
+        .main-image {
+            height: 250px;
+        }
+        
+        .thumbnail {
+            width: 70px;
+            height: 50px;
+        }
+        
+        .similar-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+    }
+
+    @media (max-width: 576px) {
+        .blog-container {
+            padding: 0 10px;
+        }
+        
+        .blog-header,
+        .blog-content,
+        .comment-form {
+            padding: 15px;
+        }
+        
+        .tab-buttons {
+            flex-direction: column;
+        }
+        
+        .tab-btn {
+            padding: 10px;
+        }
+        
+        .similar-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="blog-container">
+    <!-- هدر وبلاگ -->
+    <div class="blog-header">
+        <h1 class="blog-title">{{ blog.title|default:_('وبلاگ بدون عنوان') }}</h1>
+        <div class="blog-meta">
+            <div class="rating-stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= avg_rating|floatformat:0 %}
+                        <i class="fas fa-star"></i>
+                    {% elif forloop.counter <= avg_rating|add:0.5 %}
+                        <i class="fas fa-star-half-alt"></i>
+                    {% else %}
+                        <i class="far fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+                <span style="margin-right: 5px; color: var(--gray);">({{ rating_count }})</span>
+            </div>
+            <span class="blog-category">{{ blog.category.name|default:_('بدون دسته‌بندی') }}</span>
+            <span><i class="far fa-calendar"></i> {{ blog.created_at|date:"Y/m/d" }}</span>
+        </div>
+    </div>
+
+    <!-- گالری تصاویر -->
+    <div class="blog-main">
+        <div class="gallery-container">
+            <div class="main-image" id="mainImage">
+                {% if images.first %}
+                    <img src="{{ images.first.image.url }}" alt="{{ blog.title }}" id="currentImage">
+                {% else %}
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--gray);">
+                        <i class="fas fa-image fa-3x"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if images|length > 1 %}
+            <div class="thumbnails">
+                {% for image in images %}
+                    <div class="thumbnail {% if forloop.first %}active{% endif %}" data-image="{{ image.image.url }}">
+                        <img src="{{ image.image.url }}" alt="تصویر {{ forloop.counter }}">
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- محتوای اصلی -->
+        <div class="blog-content">
+            {{ blog.content|default:_('محتوای وبلاگ در دسترس نیست')|safe }}
+        </div>
+
+        <!-- سایدبار اطلاعات -->
+        <div class="blog-sidebar">
+            <div class="tab-panel active">
+                <h3 style="color: var(--secondary); margin-bottom: 15px;"><i class="fas fa-info-circle"></i> اطلاعات وبلاگ</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <strong>آدرس:</strong>
+                        <p style="margin-top: 5px; color: var(--gray);">{{ blog.address|default:_('بدون آدرس') }}</p>
+                    </div>
+                    <div>
+                        <strong>شهر:</strong>
+                        <p style="margin-top: 5px; color: var(--gray);">{{ blog.city|default:_('بدون شهر') }}</p>
+                    </div>
+                    {% if blog.district %}
+                    <div>
+                        <strong>منطقه:</strong>
+                        <p style="margin-top: 5px; color: var(--gray);">{{ blog.district }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- تب‌ها -->
+    <div class="tabs">
+
+
+        <!-- تب نظرات -->
+        <div class="tab-panel active" id="comments">
+            {% if comments %}
+                {% for comment in comments|slice:":5" %}
+                    <div class="comment">
+                        <div class="comment-header">
+                            <div class="comment-user">
+                                <i class="fas fa-user-circle"></i>
+                                {{ comment.user.get_full_name|default:comment.user.username }}
+                            </div>
+                            <div class="rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= comment.rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p>{{ comment.comment|default:_('بدون نظر') }}</p>
+                        <small style="color: var(--gray);">{{ comment.created_at|date:"Y/m/d H:i" }}</small>
+                    </div>
+                {% endfor %}
+                
+                {% if comments|length > 5 %}
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button id="loadMoreComments" style="background: none; border: 2px solid var(--primary); color: var(--primary); padding: 8px 20px; border-radius: 20px; cursor: pointer;">
+                            نمایش نظرات بیشتر
+                        </button>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p style="text-align: center; color: var(--gray); padding: 20px;">هنوز نظری ثبت نشده است</p>
+            {% endif %}
+
+            <!-- فرم نظر -->
+            {% if user.is_authenticated %}
+                {% if user_has_commented %}
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; color: #2e7d32;">
+                        <i class="fas fa-check-circle"></i> شما قبلاً نظر داده‌اید
+                    </div>
+                {% else %}
+                    <form class="comment-form" method="post" action="{% url 'root:add_comment' blog.slug %}">
+                        {% csrf_token %}
+                        <h3 style="color: var(--secondary); margin-bottom: 15px;">ثبت نظر جدید</h3>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: var(--gray);">امتیاز:</label>
+                            <div class="rating-input">
+                                {% for i in "12345"|make_list %}
+                                    <input type="radio" name="rating" value="{{ forloop.counter }}" id="star{{ forloop.counter }}" {% if forloop.first %}checked{% endif %}>
+                                    <label for="star{{ forloop.counter }}"><i class="far fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <textarea name="comment" placeholder="نظر خود را اینجا بنویسید..." required></textarea>
+                        
+                        <button type="submit">
+                            <i class="fas fa-paper-plane"></i> ارسال نظر
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 20px; background: var(--light); border-radius: 10px; margin-top: 20px;">
+                    برای ثبت نظر <a href="{% url 'accounts:login' %}?next={{ request.path }}" style="color: var(--primary); font-weight: bold;">وارد</a> شوید
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- تب جزئیات -->
+        <div class="tab-panel" id="details">
+            <div style="display: grid; gap: 20px;">
+                <div>
+                    <h4 style="color: var(--secondary); margin-bottom: 10px;">اطلاعات تماس</h4>
+                    <p><i class="fas fa-phone"></i> تلفن: {{ blog.phone|default:'ثبت نشده' }}</p>
+                    <p><i class="fas fa-envelope"></i> ایمیل: {{ blog.email|default:'ثبت نشده' }}</p>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--secondary); margin-bottom: 10px;">سایر اطلاعات</h4>
+                    <p><i class="fas fa-user"></i> نویسنده: {{ blog.author.get_full_name|default:blog.author.username }}</p>
+                    <p><i class="fas fa-eye"></i> بازدیدها: {{ blog.views|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- وبلاگ‌های مشابه -->
+    {% if similar_blogs %}
+    <div class="similar-blogs">
+        <h2 class="similar-title">وبلاگ‌های مشابه</h2>
+        <div class="similar-grid">
+            {% for similar in similar_blogs|slice:":4" %}
+                <div class="similar-card">
+                    <div class="similar-img">
+                        {% if similar.images.first %}
+                            <img src="{{ similar.images.first.image.url }}" alt="{{ similar.title }}">
+                        {% else %}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--light); color: var(--gray);">
+                                <i class="fas fa-image fa-2x"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="similar-info">
+                        <h3 class="similar-name">
+                            <a href="{% url 'root:send_detail' similar.slug %}">
+                                {{ similar.title|truncatechars:50 }}
+                            </a>
+                        </h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="blog-category" style="font-size: 0.8rem; padding: 3px 8px;">
+                                {{ similar.category.name|default:'بدون دسته' }}
+                            </span>
+                            <span style="color: var(--gray); font-size: 0.9rem;">
+                                <i class="fas fa-star" style="color: #ffc107;"></i>
+                                {{ similar.avg_rating|floatformat:1 }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // مدیریت گالری
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const mainImage = document.getElementById('currentImage');
+    
+    if (thumbnails.length > 0 && mainImage) {
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const imageUrl = this.getAttribute('data-image');
+                mainImage.src = imageUrl;
+                
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    }
+    
+    // مدیریت تب‌ها
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // غیرفعال کردن همه تب‌ها
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabPanels.forEach(p => p.classList.remove('active'));
+            
+            // فعال کردن تب انتخاب شده
+            this.classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+        });
+    });
+    
+    // نمایش نظرات بیشتر
+    const loadMoreBtn = document.getElementById('loadMoreComments');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            // در اینجا می‌توانید درخواست AJAX برای دریافت نظرات بیشتر ارسال کنید
+            // فعلاً پیام نمایش می‌دهیم
+            this.style.display = 'none';
+            alert('در حالت واقعی، این دکمه نظرات بیشتر را از سرور دریافت می‌کند');
+        });
+    }
+    
+    // مدیریت امتیازدهی در فرم
+    const starInputs = document.querySelectorAll('.rating-input input');
+    const starLabels = document.querySelectorAll('.rating-input label');
+    
+    starInputs.forEach((input, index) => {
+        input.addEventListener('change', function() {
+            starLabels.forEach((label, idx) => {
+                const icon = label.querySelector('i');
+                if (idx <= index) {
+                    icon.className = 'fas fa-star';
+                    icon.style.color = '#ffc107';
+                } else {
+                    icon.className = 'far fa-star';
+                    icon.style.color = '#ccc';
+                }
+            });
+        });
+    });
+    
+    // پیش‌نمایش امتیازدهی
+    starLabels.forEach((label, index) => {
+        const icon = label.querySelector('i');
+        
+        label.addEventListener('mouseenter', function() {
+            starLabels.forEach((l, idx) => {
+                const i = l.querySelector('i');
+                if (idx <= index) {
+                    i.className = 'fas fa-star';
+                    i.style.color = '#ffc107';
+                }
+            });
+        });
+        
+        label.addEventListener('mouseleave', function() {
+            const checkedInput = document.querySelector('.rating-input input:checked');
+            if (checkedInput) {
+                const checkedIndex = Array.from(starInputs).indexOf(checkedInput);
+                starLabels.forEach((l, idx) => {
+                    const i = l.querySelector('i');
+                    if (idx <= checkedIndex) {
+                        i.className = 'fas fa-star';
+                        i.style.color = '#ffc107';
+                    } else {
+                        i.className = 'far fa-star';
+                        i.style.color = '#ccc';
+                    }
+                });
+            } else {
+                starLabels.forEach(l => {
+                    const i = l.querySelector('i');
+                    i.className = 'far fa-star';
+                    i.style.color = '#ccc';
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock content %}

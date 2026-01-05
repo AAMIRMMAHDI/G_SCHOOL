@@ -18,7 +18,7 @@ class Major(models.Model):
 
     class Meta:
         verbose_name = "رشته تحصیلی"
-        verbose_name_plural = "Fields of study"
+        verbose_name_plural = "رشته ها"
 
 
 class Feature(models.Model):
@@ -147,7 +147,7 @@ class EducationalResource(models.Model):
 
     class Meta:
         verbose_name = "منبع آموزشی"
-        verbose_name_plural = "Educational resources"
+        verbose_name_plural = "فایل"
         ordering = ['-created_at']
 
 
@@ -182,75 +182,132 @@ class ViewLog(models.Model):
         verbose_name_plural = "لاگ‌های مشاهده"
 
 
-# ===========================
-# صفحات درباره ما و اعضای تیم
-# ===========================
-class AboutPage(models.Model):
-    title = models.CharField(max_length=200, verbose_name="عنوان صفحه")
-    subtitle = models.CharField(max_length=500, verbose_name="زیرعنوان صفحه")
-    description = models.TextField(verbose_name="توضیحات")
-    stat_store_icon = models.CharField(max_length=100, default="store", verbose_name="آیکون فروشگاه")
-    stat_store_number = models.CharField(max_length=50, default="۱,۲۵۰+", verbose_name="تعداد فروشگاه")
-    stat_store_label = models.CharField(max_length=100, default="فروشگاه فعال", verbose_name="برچسب فروشگاه")
-    stat_users_icon = models.CharField(max_length=100, default="users", verbose_name="آیکون کاربران")
-    stat_users_number = models.CharField(max_length=50, default="۵۰,۰۰۰+", verbose_name="تعداد کاربران")
-    stat_users_label = models.CharField(max_length=100, default="کاربر ثبت‌نام شده", verbose_name="برچسب کاربران")
-    stat_rating_icon = models.CharField(max_length=100, default="star", verbose_name="آیکون رضایت")
-    stat_rating_number = models.CharField(max_length=50, default="۴.۸/۵", verbose_name="امتیاز رضایت")
-    stat_rating_label = models.CharField(max_length=100, default="رضایت کاربران", verbose_name="برچسب رضایت")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به‌روزرسانی")
 
-    def __str__(self):
-        return self.title
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ____________________________________________________________________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django.utils.text import slugify
+from django.contrib.auth import get_user_model
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, verbose_name=_('Name'))
+    slug = models.SlugField(max_length=100, unique=True, verbose_name=_('Slug'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Created At'))
 
     class Meta:
-        verbose_name = "صفحه درباره ما"
-        verbose_name_plural = "About Us Pages"
-
-
-class TeamMember(models.Model):
-    name = models.CharField(max_length=200, verbose_name="نام")
-    role = models.CharField(max_length=200, verbose_name="نقش")
-    bio = models.TextField(verbose_name="بیوگرافی")
-    image = models.ImageField(upload_to='team_images/', verbose_name="تصویر")
-    linkedin_url = models.URLField(blank=True, verbose_name="لینکدین")
-    twitter_url = models.URLField(blank=True, verbose_name="توییتر")
-    github_url = models.URLField(blank=True, verbose_name="گیت‌هاب")
-    instagram_url = models.URLField(blank=True, verbose_name="اینستاگرام")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به‌روزرسانی")
+        verbose_name = _('Category')
+        verbose_name_plural = _('دسته بندی')
 
     def __str__(self):
         return self.name
 
+class Blog(models.Model):
+    author = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='blogs',
+        verbose_name=_('Author')
+    )
+    title = models.CharField(max_length=200, verbose_name=_('Title'))
+    slug = models.SlugField(max_length=200, unique=True, verbose_name=_('Slug'))
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='blogs',
+        verbose_name=_('Category')
+    )
+    content = models.TextField(verbose_name=_('Content'))
+    address = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Address'))
+    city = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('City'))
+    district = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('District'))
+    is_approved = models.BooleanField(default=False, verbose_name=_('Is Approved'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Created At'))
+
     class Meta:
-        verbose_name = "عضو تیم"
-        verbose_name_plural = "Team members"
-
-
-# ===========================
-# اطلاعات تماس و پیام‌ها
-# ===========================
-class ContactInfo(models.Model):
-    title = models.CharField(max_length=100, default="با ما در ارتباط باشید")
-    description = models.TextField(default="تیم پشتیبانی ما آماده پاسخگویی به سوالات و دریافت پیشنهادات شما می‌باشد.")
-    address = models.CharField(max_length=255, default="تهران، خیابان ولیعصر، پلاک ۱۲۳۴، طبقه ۵")
-    phone = models.CharField(max_length=20, default="۰۲۱-۱۲۳۴۵۶۷۸")
-    email = models.EmailField(default="info@example.com")
-    work_hours = models.CharField(max_length=100, default="شنبه تا چهارشنبه: ۸:۰۰ - ۱۷:۰۰ | پنجشنبه: ۸:۰۰ - ۱۴:۰۰")
+        verbose_name = _('Blog')
+        verbose_name_plural = _('وبلاگ ها')
 
     def __str__(self):
-        return "اطلاعات تماس سایت"
+        return self.title
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title, allow_unicode=True)
+            if not base_slug:
+                base_slug = f"blog-{Blog.objects.count() + 1}"
+            unique_slug = base_slug
+            counter = 1
+            while Blog.objects.filter(slug=unique_slug).exclude(id=self.id).exists():
+                unique_slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = unique_slug
+        super().save(*args, **kwargs)
 
-class ContactMessage(models.Model):
-    name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    subject = models.CharField(max_length=255)
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+class BlogImage(models.Model):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='images', verbose_name=_('Blog'))
+    image = models.ImageField(upload_to='blog_images/', verbose_name=_('Image'))
+
+    class Meta:
+        verbose_name = _('Blog Image')
+        verbose_name_plural = _('Blog Images')
 
     def __str__(self):
-        return f"{self.name} - {self.subject}"
+        return f"Image for {self.blog.title}"
+
+class BlogComment(models.Model):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='comments', verbose_name=_('Blog'))
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name=_('User'))
+    rating = models.FloatField(default=0.0, verbose_name=_('Rating'))
+    comment = models.TextField(blank=True, null=True, verbose_name=_('Comment'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Created At'))
+
+    class Meta:
+        verbose_name = _('Blog Comment')
+        verbose_name_plural = _('کامنت ها')
+        unique_together = ['blog', 'user']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.blog.title}: {self.rating}"
+
+    def save(self, *args, **kwargs):
+        if self.rating < 1:
+            self.rating = 1
+        elif self.rating > 5:
+            self.rating = 5
+        super().save(*args, **kwargs)
+
+
+
+
+
+
+
+
+        

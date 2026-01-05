@@ -1,0 +1,923 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}رشته‌های آموزشی | هنرستان نوآور{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --primary: #4361ee;
+        --primary-dark: #2E7D32;
+        --secondary: #4ECDC4;
+        --accent: #FFD166;
+        --light: #F7F9FC;
+        --dark: #292F36;
+        --text: #333333;
+        --text-light: #6c757d;
+        --gradient: linear-gradient(135deg, #4361ee, #4361ee);
+        --gradient-secondary: linear-gradient(135deg, #4ECDC4, #FFD166);
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
+        --radius: 16px;
+        --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dark-mode {
+        --light: #1A1D27;
+        --dark: #F7F9FC;
+        --text: #E8EAED;
+        --text-light: #9AA0A6;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Vazirmatn', sans-serif;
+        background-color: var(--light);
+        color: var(--text);
+        line-height: 1.7;
+        transition: var(--transition);
+        overflow-x: hidden;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Majors Overview Section */
+    .majors-section {
+        padding: 100px 0;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: var(--dark);
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        right: 50%;
+        transform: translateX(50%);
+        width: 80px;
+        height: 4px;
+        background: var(--gradient);
+        border-radius: 2px;
+    }
+
+    .dark-mode .section-title {
+        color: var(--dark);
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: var(--text-light);
+        max-width: 700px;
+        margin: 2rem auto 0;
+    }
+
+    /* Major Cards */
+    .majors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2.5rem;
+    }
+
+    .major-card {
+        position: relative;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        height: 400px;
+        cursor: pointer;
+    }
+
+    .dark-mode .major-card {
+        background: #252A37;
+    }
+
+    .major-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .major-image {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .major-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .major-card:hover .major-image img {
+        transform: scale(1.1);
+    }
+
+    .major-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1.8rem;
+        color: white;
+    }
+
+    .major-icon-large {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .major-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .major-description {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.9;
+    }
+
+    .major-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        list-style: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .major-features li {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .major-features li i {
+        font-size: 0.8rem;
+    }
+
+    .major-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        transition: var(--transition);
+    }
+
+    .major-link:hover {
+        gap: 10px;
+    }
+
+    /* Detailed Major Section - Redesigned */
+    .detailed-major {
+        padding: 100px 0;
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.03) 0%, rgba(78, 205, 196, 0.03) 100%);
+    }
+
+    .major-detail-card {
+        background: white;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .dark-mode .major-detail-card {
+        background: #252A37;
+    }
+
+    /* Header with new design */
+    .major-detail-header {
+        padding: 2.5rem;
+        background: var(--gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .major-detail-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .major-detail-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .major-detail-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    /* Info Icons Grid */
+    .info-icons-grid {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .info-icon-item {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+        padding: 1rem;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .info-icon-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-5px);
+    }
+
+    .info-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: var(--primary);
+        font-size: 1.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .info-icon-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+        background: var(--light);
+        border-radius: var(--radius);
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-hover);
+        animation: slideUp 0.4s ease;
+    }
+
+    .dark-mode .modal-content {
+        background: #252A37;
+    }
+
+    .modal-header {
+        padding: 1.5rem 2rem;
+        background: var(--gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-body p {
+        color: var(--text);
+        margin-bottom: 1rem;
+        line-height: 1.8;
+    }
+
+    .dark-mode .modal-body p {
+        color: var(--text);
+    }
+
+    .modal-list {
+        list-style: none;
+        margin: 1.5rem 0;
+    }
+
+    .modal-list li {
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dark-mode .modal-list li {
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+    }
+
+    .modal-list li i {
+        color: var(--primary);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Student Works Carousel */
+    .student-works-section {
+        margin-top: 4rem;
+        padding: 0 2.5rem 2.5rem;
+    }
+
+    .works-carousel-container {
+        position: relative;
+        overflow: hidden;
+        margin-top: 2rem;
+    }
+
+    .works-carousel {
+        display: flex;
+        gap: 1.5rem;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 10px 0 20px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .works-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+    .work-carousel-item {
+        flex: 0 0 auto;
+        width: 300px;
+        height: 200px;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .work-carousel-item:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .work-carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .work-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        color: white;
+        padding: 1rem;
+        transform: translateY(100%);
+        transition: var(--transition);
+    }
+
+    .work-carousel-item:hover .work-overlay {
+        transform: translateY(0);
+    }
+
+    .work-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .work-student {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .carousel-nav {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .carousel-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--light);
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dark-mode .carousel-btn {
+        background: #252A37;
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .carousel-btn:hover {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .info-icons-grid {
+            flex-wrap: wrap;
+        }
+        
+        .info-icon-item {
+            min-width: 100px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .majors-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .major-detail-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .info-icons-grid {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .majors-section,
+        .detailed-major {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .majors-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .major-card {
+            height: 300px;
+        }
+
+        .major-title {
+            font-size: 1.2rem;
+        }
+
+        .major-description {
+            font-size: 0.9rem;
+        }
+
+        .major-features li {
+            font-size: 0.8rem;
+        }
+
+        .info-icon-item {
+            min-width: 80px;
+            padding: 0.5rem;
+        }
+        
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+        
+        .student-works-section {
+            padding: 0 1rem 2rem;
+        }
+        
+        .work-carousel-item {
+            width: 250px;
+            height: 180px;
+        }
+    }
+</style>
+
+<!-- Majors Overview Section -->
+<section class="majors-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">معرفی رشته‌های هنرستان</h2>
+            <p class="section-subtitle">هنرستان نوآور با ارائه رشته‌های متنوع و به‌روز، زمینه‌ساز موفقیت هنرجویان در بازار کار است</p>
+        </div>
+
+        <div class="majors-grid">
+            {% for major in majors %}
+                <div class="major-card">
+                    <div class="major-image">
+                        <img src="{{ major.image.url }}" alt="{{ major.title }}">
+                    </div>
+                    <div class="major-overlay">
+                        <div class="major-icon-large">
+                            <i class="fas {{ major.icon }}"></i>
+                        </div>
+                        <h3 class="major-title">{{ major.title }}</h3>
+                        <p class="major-description">{{ major.description }}</p>
+                        <ul class="major-features">
+                            {% for feature in major.features.all %}
+                                <li><i class="fas fa-check"></i> {{ feature.text }}</li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{% url 'root:major_detail' major.id %}" class="major-link">
+                            اطلاعات بیشتر
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Detailed Major Section -->
+<section class="detailed-major" id="detailed-major">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">{{ selected_major.title }}</h2>
+            <p class="section-subtitle">{{ selected_major.subtitle }}</p>
+        </div>
+
+        <div class="major-detail-card">
+            <!-- Header with Info Icons -->
+            <div class="major-detail-header">
+                <div class="header-content">
+                    <div class="major-detail-icon">
+                        <i class="fas {{ selected_major.icon }}"></i>
+                    </div>
+                    <div>
+                        <h2 class="major-detail-title">{{ selected_major.title }}</h2>
+                        <p class="major-detail-subtitle">{{ selected_major.subtitle }}</p>
+                    </div>
+                </div>
+                
+                <!-- Info Icons Grid -->
+                <div class="info-icons-grid">
+                    <div class="info-icon-item" onclick="openModal('introduction-modal')">
+                        <div class="info-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="info-icon-title">معرفی رشته</div>
+                    </div>
+                    
+                    <div class="info-icon-item" onclick="openModal('requirements-modal')">
+                        <div class="info-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="info-icon-title">شرایط ورود</div>
+                    </div>
+                    
+                    <div class="info-icon-item" onclick="openModal('career-modal')">
+                        <div class="info-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="info-icon-title">آینده شغلی</div>
+                    </div>
+                    
+                    <div class="info-icon-item" onclick="openModal('skills-modal')">
+                        <div class="info-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="info-icon-title">مهارت‌ها</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Works Carousel -->
+            <div class="student-works-section">
+                <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-images"></i> نمونه کارهای دانش‌آموزان
+                </h3>
+                
+                <div class="works-carousel-container">
+                    <div class="works-carousel" id="worksCarousel">
+                        {% for work in selected_major.works.all %}
+                            <div class="work-carousel-item">
+                                <img src="{{ work.image.url }}" alt="{{ work.title }}">
+                                <div class="work-overlay">
+                                    <div class="work-title">{{ work.title }}</div>
+                                    {% if work.student_name %}
+                                        <div class="work-student">هنرجو: {{ work.student_name }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="carousel-nav">
+                        <button class="carousel-btn" onclick="scrollCarousel('left')">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="carousel-btn" onclick="scrollCarousel('right')">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modals -->
+<div class="modal-overlay" id="introduction-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-info-circle"></i> معرفی رشته {{ selected_major.title }}</h3>
+            <button class="modal-close" onclick="closeModal('introduction-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            {{ selected_major.introduction|linebreaks }}
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="requirements-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-graduation-cap"></i> شرایط ورود به رشته {{ selected_major.title }}</h3>
+            <button class="modal-close" onclick="closeModal('requirements-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ul class="modal-list">
+                {% for req in selected_major.requirements.all %}
+                    <li><i class="fas fa-check"></i> {{ req.text }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="career-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-briefcase"></i> آینده شغلی رشته {{ selected_major.title }}</h3>
+            <button class="modal-close" onclick="closeModal('career-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ul class="modal-list">
+                {% for career in selected_major.careers.all %}
+                    <li><i class="fas fa-briefcase"></i> {{ career.text }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="skills-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-tools"></i> مهارت‌های آموزش داده‌شده در {{ selected_major.title }}</h3>
+            <button class="modal-close" onclick="closeModal('skills-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ul class="modal-list">
+                {% for skill in selected_major.skills.all %}
+                    <li><i class="fas fa-check-circle"></i> {{ skill.text }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Modal Functions
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+        }
+    });
+
+    // Carousel Functions
+    function scrollCarousel(direction) {
+        const carousel = document.getElementById('worksCarousel');
+        const scrollAmount = 320; // Width of item + gap
+        
+        if (direction === 'left') {
+            carousel.scrollLeft -= scrollAmount;
+        } else {
+            carousel.scrollLeft += scrollAmount;
+        }
+    }
+
+    // Auto-scroll carousel every 5 seconds
+    let autoScrollInterval;
+    
+    function startAutoScroll() {
+        autoScrollInterval = setInterval(() => {
+            const carousel = document.getElementById('worksCarousel');
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+            
+            if (carousel.scrollLeft >= maxScroll) {
+                carousel.scrollLeft = 0;
+            } else {
+                carousel.scrollLeft += 320;
+            }
+        }, 5000);
+    }
+    
+    function stopAutoScroll() {
+        clearInterval(autoScrollInterval);
+    }
+    
+    // Start auto-scroll
+    startAutoScroll();
+    
+    // Pause auto-scroll on hover
+    document.getElementById('worksCarousel').addEventListener('mouseenter', stopAutoScroll);
+    document.getElementById('worksCarousel').addEventListener('mouseleave', startAutoScroll);
+
+    // Scroll Animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.major-card, .info-icon-item, .work-carousel-item').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+</script>
+{% endblock %}

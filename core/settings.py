@@ -1,15 +1,15 @@
 from pathlib import Path
 import os
 
-# مسیر اصلی پروژه
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# امنیت
+
 SECRET_KEY = 'django-insecure-!@#$%^&*()random-key-please-change-me-in-production!@#$%^&*()'
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
-# اپلیکیشن‌ها
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -18,14 +18,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # اپلیکیشن‌های سفارشی
+
     'accounts',
-    'blog',
     'index',
     'form',
 ]
 
-# میان‌افزارها
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -37,10 +36,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# مسیرهای اصلی
+
 ROOT_URLCONF = 'core.urls'
 
-# تنظیمات قالب‌ها
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -59,7 +58,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# پایگاه داده
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -67,35 +66,75 @@ DATABASES = {
     }
 }
 
-# اعتبارسنجی رمز عبور
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+print("_____________________________________________________________________________")
 
-# تنظیمات زبان و منطقه زمانی
-LANGUAGE_CODE = 'fa-ir'
-TIME_ZONE = 'Asia/Tehran'
+
+print("""
+Welcome ✅
+Testing and running files
+Preparing for project start
+""")
+
+print("_____________________________________________________________________________")
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{levelname}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'django.log',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'WARNING',  # فقط هشدار و خطاها
+    },
+    'loggers': {
+        'django.server': {  # این logger مخصوص runserver است
+            'handlers': ['console'],
+            'level': 'ERROR',  # فقط خطاهای جدی چاپ شود
+            'propagate': False,
+        },
+        'accounts': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
+        'send': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
+    },
+}
+
+
+LANGUAGE_CODE = "en-us"
+
+TIME_ZONE = "UTC" 
 USE_I18N = True
 USE_TZ = True
 
-# فایل‌های استاتیک
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# فایل‌های رسانه‌ای (آپلودی)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# مسیرهای ورود و خروج
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# مدل کاربر سفارشی
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-# تنظیم خودکار ID‌ها
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

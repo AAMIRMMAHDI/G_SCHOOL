@@ -7,7 +7,7 @@ from .forms import LoginForm, RegisterForm
 def login_view(request):
     """Display and handle login form, restricted to admins or approved users."""
     if request.user.is_authenticated:
-        return redirect('blog:send_list')
+        return redirect('root:send_list')
 
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
@@ -15,8 +15,8 @@ def login_view(request):
             user = form.get_user()
             if user.is_staff or user.is_approved:
                 login(request, user)
-                messages.success(request, _('✅ Successfully logged in!'))
-                return redirect('blog:send_list')
+                messages.success(request, _('✅ خوش برگشتی'))
+                return redirect('root:send_list')
             else:
                 messages.error(request, _('❌ Your account is not approved yet.'))
         else:
@@ -24,7 +24,7 @@ def login_view(request):
     else:
         form = LoginForm()
 
-    return render(request, 'accounts/login.html', {
+    return render(request, 'form/login.html', {
         'login_form': form,
         'register_form': RegisterForm()
     })
@@ -32,7 +32,7 @@ def login_view(request):
 def register_view(request):
     """Display and handle registration form, users need admin approval."""
     if request.user.is_authenticated:
-        return redirect('blog:send_list')
+        return redirect('root:send_list')
 
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -48,7 +48,7 @@ def register_view(request):
     else:
         form = RegisterForm()
 
-    return render(request, 'accounts/login.html', {
+    return render(request, 'form/login.html', {
         'register_form': form,
         'login_form': LoginForm()
     })

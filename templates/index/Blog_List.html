@@ -776,7 +776,7 @@
                         <div class="filter-section">
                             <h3 class="filter-title">
                                 {% trans "دسته‌بندی‌ها" %}
-                                <a href="{% url 'blog:send_list' %}" class="filter-reset">{% trans "پاک کردن" %}</a>
+                                <a href="{% url 'root:send_list' %}" class="filter-reset">{% trans "پاک کردن" %}</a>
                             </h3>
                             <div class="filter-options">
                                 <label class="filter-option">
@@ -800,15 +800,7 @@
                     </form>
                 </div>
             </div>
-            
-            <div class="view-options">
-                <button class="view-option active" data-view="grid">
-                    <i class="fas fa-th"></i>
-                </button>
-                <button class="view-option" data-view="list">
-                    <i class="fas fa-list"></i>
-                </button>
-            </div>
+
         </div>
     </div>
     
@@ -823,13 +815,8 @@
                 <div class="blog-content">
                     <h3 class="blog-title">{{ blog.title }}</h3>
                     <span class="blog-category">{{ blog.category.name|default:_('بدون دسته‌بندی') }}</span>
-                    <div class="blog-info">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ blog.address|default:_('بدون آدرس') }}</span>
-                    </div>
-                    <p class="blog-description">{{ blog.content|truncatewords:20 }}</p>
                     <div class="blog-footer">
-                        <a href="{% url 'blog:send_detail' blog.slug %}" class="btn btn-outline">{% trans "مشاهده جزئیات" %}</a>
+                        <a href="{% url 'root:send_detail' blog.slug %}" class="btn btn-outline">{% trans "مشاهده جزئیات" %}</a>
                     </div>
                 </div>
             </div>
@@ -838,7 +825,7 @@
                 <i class="fas fa-search"></i>
                 <h3>{% trans "هیچ وبلاگی یافت نشد" %}</h3>
                 <p>{% trans "متأسفانه با فیلترهای انتخابی شما هیچ نتیجه‌ای پیدا نشد." %}</p>
-                <a href="{% url 'blog:send_list' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                <a href="{% url 'root:send_list' %}" class="btn btn-primary" style="margin-top: 1rem;">
                     {% trans "نمایش همه" %}
                 </a>
             </div>
@@ -885,7 +872,7 @@
         <div class="filter-section">
             <h3 class="filter-title">
                 {% trans "دسته‌بندی‌ها" %}
-                <a href="{% url 'blog:send_list' %}" class="filter-reset">{% trans "پاک کردن" %}</a>
+                <a href="{% url 'root:send_list' %}" class="filter-reset">{% trans "پاک کردن" %}</a>
             </h3>
             <div class="filter-options">
                 <label class="filter-option">
@@ -1022,3 +1009,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock content %}
+
+

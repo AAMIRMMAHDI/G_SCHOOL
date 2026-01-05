@@ -1,22 +1,23 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 
-{% block title %}{% trans "ثبت وبلاگ | سامانه سازمانی" %}{% endblock title %}
+{% block title %}{% trans "ثبت پست | سامانه آموزشی مدرسه" %}{% endblock title %}
 
 {% block content %}
 <style>
     :root {
-        --primary: #4361ee;
-        --secondary: #3a0ca3;
-        --accent: #7209b7;
-        --success: #4cc9f0;
+        --primary: #4361ee; /* آبی شاد برای مدرسه */
+        --secondary: #3a0ca3; /* سبز برای موفقیت و رشد */
+        --accent: #ffc107; /* زرد برای انرژی و خلاقیت */
+        --success: #17a2b8; /* آبی-سبز برای اطلاع‌رسانی */
         --light: #f8f9fa;
-        --dark: #212529;
+        --dark: #343a40;
         --white: #ffffff;
         --gray: #6c757d;
-        --border: #e9ecef;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        --radius: 16px;
+        --border: #dee2e6;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+        --radius: 20px; /* افزایش برای گوشه‌های گردتر */
     }
 
     .blog-register-container {
@@ -73,10 +74,10 @@
         width: 100%;
         padding: 1rem;
         border: 1.5px solid var(--border);
-        border-radius: 8px;
+        border-radius: 12px; /* گردتر */
         font-size: 1rem;
         background: var(--white);
-        transition: all 0.3s ease;
+        transition: var(--transition);
     }
 
     .form-input:focus,
@@ -84,7 +85,7 @@
     .form-textarea:focus {
         outline: none;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
     }
 
     .form-textarea {
@@ -104,13 +105,13 @@
         text-align: center;
         border-radius: var(--radius);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         background: var(--light);
     }
 
     .image-upload-section:hover {
         border-color: var(--primary);
-        background: rgba(67, 97, 238, 0.05);
+        background: rgba(0, 123, 255, 0.05);
     }
 
     .upload-icon {
@@ -139,7 +140,7 @@
 
     .preview-item {
         position: relative;
-        border-radius: 8px;
+        border-radius: 12px; /* گردتر */
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
@@ -164,7 +165,7 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition);
     }
 
     .preview-remove:hover {
@@ -180,10 +181,10 @@
 
     .btn {
         padding: 0.7rem 1.2rem;
-        border-radius: 8px;
+        border-radius: 12px; /* گردتر */
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         border: none;
         font-size: 0.9rem;
         display: inline-flex;
@@ -195,12 +196,12 @@
     .btn-primary {
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: var(--white);
-        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
     }
 
     .btn-outline {
@@ -210,7 +211,7 @@
     }
 
     .btn-outline:hover {
-        background: rgba(67, 97, 238, 0.05);
+        background: rgba(0, 123, 255, 0.05);
     }
 
     .preview-section {
@@ -262,7 +263,7 @@
         width: 100%;
         height: 100px;
         object-fit: cover;
-        border-radius: 8px;
+        border-radius: 12px; /* گردتر */
     }
 
     .preview-info {
@@ -390,12 +391,12 @@
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-blog"></i>
-                    {% trans "اطلاعات وبلاگ" %}
+                    {% trans "اطلاعات پست" %}
                 </h2>
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label" for="{{ form.title.id_for_label }}">{% trans "عنوان وبلاگ" %} *</label>
+                        <label class="form-label" for="{{ form.title.id_for_label }}">{% trans "عنوان پست" %} *</label>
                         {{ form.title }}
                         {% for error in form.title.errors %}
                             <p class="error">{{ error }}</p>
@@ -411,7 +412,7 @@
                     </div>
                     
                     <div class="form-group full-width">
-                        <label class="form-label" for="{{ form.content.id_for_label }}">{% trans "محتوای وبلاگ" %} *</label>
+                        <label class="form-label" for="{{ form.content.id_for_label }}">{% trans "محتوای پست" %} *</label>
                         {{ form.content }}
                         {% for error in form.content.errors %}
                             <p class="error">{{ error }}</p>
@@ -447,7 +448,7 @@
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-images"></i>
-                    {% trans "تصاویر وبلاگ" %}
+                    {% trans "تصاویر پست" %}
                 </h2>
                 
                 <div class="image-upload-section" onclick="document.getElementById('imageUpload').click()">
@@ -463,13 +464,13 @@
             </div>
             
             <div class="form-actions">
-                <a href="{% url 'blog:send_list' %}" class="btn btn-outline">
+                <a href="{% url 'root:send_list' %}" class="btn btn-outline">
                     <i class="fas fa-times"></i>
                     {% trans "انصراف" %}
                 </a>
                 <button type="submit" class="btn btn-primary" id="submitBtn">
                     <i class="fas fa-check"></i>
-                    {% trans "ثبت وبلاگ" %}
+                    {% trans "ثبت پست" %}
                 </button>
             </div>
         </form>
@@ -479,9 +480,9 @@
         <div class="preview-card">
             <div class="preview-header">
                 <div class="preview-logo">
-                    <i class="fas fa-blog"></i>
+                    <i class="fas fa-school"></i>
                 </div>
-                <div class="preview-title" id="previewTitle">{{ form.title.value|default:_('عنوان وبلاگ') }}</div>
+                <div class="preview-title" id="previewTitle">{{ form.title.value|default:_('عنوان پست') }}</div>
                 <div class="preview-category" id="previewCategory">
                     {% if form.category.value %}
                         {{ form.category.value }}
@@ -512,7 +513,7 @@
                 </div>
                 
                 <div class="preview-content">
-                    <p id="previewContent">{{ form.content.value|default:_('محتوای وبلاگ') }}</p>
+                    <p id="previewContent">{{ form.content.value|default:_('محتوای پست') }}</p>
                 </div>
             </div>
         </div>
@@ -522,7 +523,7 @@
                 <i class="fas fa-lightbulb"></i>
                 {% trans "نکته مهم" %}
             </h4>
-            <p>{% trans "پس از ثبت اطلاعات، وبلاگ شما پس از تأیید نهایی در سامانه نمایش داده خواهد شد. زمان تأیید حداکثر ۲۴ ساعت کاری می‌باشد." %}</p>
+            <p>{% trans "پس از ثبت اطلاعات، پست شما پس از تأیید نهایی در سامانه نمایش داده خواهد شد. زمان تأیید حداکثر ۲۴ ساعت کاری می‌باشد." %}</p>
         </div>
     </div>
 </div>
@@ -541,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (titleInput) {
         titleInput.addEventListener('input', function() {
-            document.getElementById('previewTitle').textContent = this.value || '{% trans "عنوان وبلاگ" %}';
+            document.getElementById('previewTitle').textContent = this.value || '{% trans "عنوان پست" %}';
         });
     }
 
@@ -554,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (contentInput) {
         contentInput.addEventListener('input', function() {
-            document.getElementById('previewContent').textContent = this.value || '{% trans "محتوای وبلاگ" %}';
+            document.getElementById('previewContent').textContent = this.value || '{% trans "محتوای پست" %}';
         });
     }
 
