@@ -1,0 +1,60 @@
+<!-- templates/form/exam_grades.html کامل -->
+{% extends 'form_base.html' %}
+{% load static %}
+
+{% block title %}نمرات آزمون {{ exam.title }}{% endblock %}
+
+{% block content %}
+<style>
+    .grades-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .table {
+        margin-top: 20px;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .grades-container {
+            margin: 10px auto;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .table {
+            overflow-x: auto;
+        }
+        h2 {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<div class="grades-container">
+    <h2>نمرات آزمون {{ exam.title }}</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>دانش‌آموز</th>
+                <th>نمره (از ۲۰)</th>
+                <th>زمان محاسبه</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grade in grades %}
+            <tr>
+                <td>{{ grade.student }}</td>
+                <td>{{ grade.score|floatformat:2 }}</td>
+                <td>{{ grade.calculated_at }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">هیچ نمره‌ای ثبت نشده.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

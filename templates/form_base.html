@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}هنرستان فنی و حرفه ای - سیستم حضور و غیاب{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3a5a78; /* آبی آکادمیک */
+            --secondary: #d4a574; /* قهوه ای گرم هنری */
+            --accent: #8b4513; /* قهوه ای سیر */
+            --success: #2a9d8f; /* فیروزه ای */
+            --warning: #e9c46a; /* طلایی */
+            --danger: #e76f51; /* مرجانی */
+            --light: #f8f9fa;
+            --dark: #264653;
+            --white: #ffffff;
+            --gray-light: #e9ecef;
+            --gray: #6c757d;
+            --border: #dee2e6;
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+            --radius: 20px; /* افزایش radius برای گردتر کردن گوشه‌ها */
+            --radius-lg: 30px; /* برای عناصر بزرگتر */
+            --transition: all 0.3s ease;
+            --header-height: 80px;
+            --footer-height: 60px; /* ساده‌سازی فوتر */
+            --bottom-bar-height: 70px; /* برای نوار پایین موبایل */
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: var(--header-height);
+            padding-bottom: var(--footer-height);
+        }
+        
+        /* هدر جدید با گوشه‌های گرد در پایین */
+        .main-header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--dark) 100%);
+            height: var(--header-height);
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 1030;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-bottom-left-radius: var(--radius); /* گرد کردن گوشه پایین چپ */
+            border-bottom-right-radius: var(--radius); /* گرد کردن گوشه پایین راست */
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            background-color: var(--secondary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.8rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo-text {
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .logo-subtext {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            display: block;
+            font-weight: 400;
+        }
+        
+        /* نویگیشن */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .nav-link {
+            color: var(--white);
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: var(--radius); /* گرد کردن گوشه‌های لینک‌ها */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--white);
+        }
+        
+        .nav-link i {
+            font-size: 1.1rem;
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        
+        /* محتوای اصلی */
+        .main-content {
+            flex: 1;
+            padding: 30px 20px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* کارت‌های مدرن با گوشه‌های گردتر */
+        .art-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: none;
+            overflow: hidden;
+            transition: var(--transition);
+            margin-bottom: 24px;
+            border-top: 5px solid var(--secondary);
+        }
+        
+        .art-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .art-card-header {
+            background-color: rgba(58, 90, 120, 0.05);
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border);
+            border-top-left-radius: var(--radius-lg); /* گرد کردن گوشه‌های هدر کارت */
+            border-top-right-radius: var(--radius-lg);
+        }
+        
+        .art-card-body {
+            padding: 25px;
+            border-bottom-left-radius: var(--radius-lg); /* گرد کردن گوشه‌های بدنه کارت */
+            border-bottom-right-radius: var(--radius-lg);
+        }
+        
+        .art-card-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 1.4rem;
+        }
+        
+        .art-card-subtitle {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        
+        /* دکمه‌های هنری با گوشه‌های گردتر */
+        .art-btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .art-btn-primary {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--dark) 100%);
+            color: var(--white);
+        }
+        
+        .art-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(58, 90, 120, 0.3);
+            color: var(--white);
+        }
+        
+        .art-btn-secondary {
+            background-color: var(--secondary);
+            color: var(--dark);
+        }
+        
+        .art-btn-secondary:hover {
+            background-color: #c8955a;
+            color: var(--dark);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(212, 165, 116, 0.3);
+        }
+        
+        /* فوتر ساده */
+        .main-footer {
+            background: linear-gradient(90deg, var(--dark) 0%, var(--primary) 100%);
+            color: var(--white);
+            padding: 15px 0;
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.9rem;
+            border-top-left-radius: var(--radius); /* گرد کردن گوشه‌های فوتر */
+            border-top-right-radius: var(--radius);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--footer-height);
+            z-index: 1020;
+        }
+        
+        /* پیام‌های اطلاع‌رسانی با گوشه‌های گردتر */
+        .art-alert {
+            border-radius: var(--radius-lg);
+            border: none;
+            padding: 18px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .art-alert i {
+            font-size: 1.4rem;
+        }
+        
+        /* نوار پایین موبایل مثل اپ */
+        .mobile-bottom-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--dark) 100%);
+            height: var(--bottom-bar-height);
+            z-index: 1030;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+            border-top-left-radius: var(--radius); /* گرد کردن گوشه‌های نوار پایین */
+            border-top-right-radius: var(--radius);
+        }
+        
+        .mobile-bottom-bar .nav-menu {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+            padding: 0 10px;
+        }
+        
+        .mobile-bottom-bar .nav-link {
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px;
+            font-size: 0.8rem;
+            border-radius: var(--radius); /* گرد کردن لینک‌های نوار */
+        }
+        
+        .mobile-bottom-bar .nav-link i {
+            font-size: 1.5rem;
+        }
+        
+        .mobile-bottom-bar .nav-link span {
+            font-size: 0.75rem;
+        }
+        
+        /* سازگاری با موبایل */
+        @media (max-width: 992px) {
+            body {
+                padding-top: 0; /* حذف padding برای هدر */
+                padding-bottom: var(--bottom-bar-height); /* تنظیم padding بدون فوتر */
+            }
+            
+            .main-header {
+                display: none; /* پاک کردن هدر در موبایل */
+            }
+            
+            .main-footer {
+                display: none; /* پنهان کردن فوتر در موبایل */
+            }
+            
+            .mobile-bottom-bar {
+                display: block; /* نمایش نوار پایین در موبایل */
+            }
+            
+            .nav-menu {
+                gap: 0;
+            }
+            
+            .nav-link {
+                width: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .art-card {
+                border-radius: var(--radius-lg);
+            }
+            
+            .art-card-header, .art-card-body {
+                padding: 20px;
+            }
+            
+            .header-container {
+                padding: 0 15px;
+            }
+            
+            :root {
+                --header-height: 0;
+                --footer-height: 0;
+                --bottom-bar-height: 60px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .art-card-header, .art-card-body {
+                padding: 18px;
+            }
+            
+            .mobile-bottom-bar .nav-link i {
+                font-size: 1.4rem;
+            }
+            
+            .mobile-bottom-bar .nav-link span {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* انیمیشن‌های ظریف */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        /* اسکرول بار سفارشی */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--gray-light);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- هدر جدید (فقط در دسکتاپ) -->
+    <header class="main-header">
+        <div class="header-container">
+            <a href="{% url 'form:class_list' %}" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div>
+                    <div class="logo-text">هنرستان فنی و حرفه‌ای</div>
+                    <span class="logo-subtext">سیستم مدیریت آموزشی</span>
+                </div>
+            </a>
+            
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav class="nav-menu" id="navMenu">
+                <a href="{% url 'form:class_list' %}" class="nav-link">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>کلاس‌ها</span>
+                </a>
+                {% if user.is_superuser %}
+                <a href="{% url 'form:weekly_schedule' %}" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>برنامه هفتگی</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'form:exam_list' %}" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>آزمون‌ها</span>
+                </a>
+                <a href="{% url 'form:logout' %}" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>خروج</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- نوار پایین موبایل -->
+    <div class="mobile-bottom-bar">
+        <nav class="nav-menu">
+            <a href="{% url 'form:class_list' %}" class="nav-link">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>کلاس‌ها</span>
+            </a>
+            {% if user.is_superuser %}
+            <a href="{% url 'form:weekly_schedule' %}" class="nav-link">
+                <i class="fas fa-calendar-alt"></i>
+                <span>برنامه</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'form:exam_list' %}" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                <span>آزمون‌ها</span>
+            </a>
+            <a href="{% url 'form:logout' %}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>خروج</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- محتوای اصلی -->
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} art-alert fade-in-up">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle text-success"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle text-primary"></i>
+                    {% endif %}
+                    <div>
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- فوتر ساده در دسکتاپ -->
+    <footer class="main-footer">
+        <p>© تمامی حقوق این سایت محفوظ است. ۱۴۰۳</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // مدیریت منوی موبایل (برای دسکتاپ نیازی نیست، اما نگه می‌داریم)
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    
+                    const icon = mobileMenuToggle.querySelector('i');
+                    if (navMenu.classList.contains('active')) {
+                        icon.classList.remove('fa-bars');
+                        icon.classList.add('fa-times');
+                    } else {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+            }
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navMenu) {
+                        navMenu.classList.remove('active');
+                        if (mobileMenuToggle) {
+                            mobileMenuToggle.querySelector('i').classList.remove('fa-times');
+                            mobileMenuToggle.querySelector('i').classList.add('fa-bars');
+                        }
+                    }
+                });
+            });
+            
+            const currentPath = window.location.pathname;
+            navLinks.forEach(link => {
+                const linkPath = link.getAttribute('href');
+                if (currentPath.includes(linkPath) && linkPath !== '#') {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

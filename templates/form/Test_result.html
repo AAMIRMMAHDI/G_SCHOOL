@@ -1,0 +1,74 @@
+<!-- templates/form/exam_result.html جدید (برای نمایش نتیجه) -->
+{% extends 'form_base.html' %}
+{% load static %}
+
+{% block title %}نتیجه آزمون {{ exam.title }}{% endblock %}
+
+{% block content %}
+<style>
+    .result-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .result-summary {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .feedback-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+    }
+    .correct {
+        background: #d4edda;
+    }
+    .wrong {
+        background: #f8d7da;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .result-container {
+            margin: 10px auto;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .result-summary {
+            margin-bottom: 20px;
+        }
+        .feedback-item {
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+        h2, h3 {
+            font-size: 20px;
+        }
+        p {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<div class="result-container">
+    <h2>نتیجه آزمون {{ exam.title }}</h2>
+    <div class="result-summary">
+        <p>نمره شما: {{ score|floatformat:2 }} از 20</p>
+        <p>تعداد سوالات: {{ total_questions }}</p>
+        <p>پاسخ‌های درست: {{ correct_count }}</p>
+        <p>پاسخ‌های غلط: {{ wrong_count }}</p>
+    </div>
+    <h3>جزئیات پاسخ‌ها</h3>
+    {% for item in feedback %}
+    <div class="feedback-item {% if item.is_correct %}correct{% else %}wrong{% endif %}">
+        <p><strong>سوال:</strong> {{ item.question }}</p>
+        <p><strong>پاسخ انتخاب‌شده:</strong> {{ item.selected }}</p>
+        <p><strong>پاسخ درست:</strong> {{ item.correct }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

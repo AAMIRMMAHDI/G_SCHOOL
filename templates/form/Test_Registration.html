@@ -1,0 +1,106 @@
+<!-- templates/form/take_exam.html کامل -->
+{% extends 'form_base.html' %}
+{% load static form_filters %}
+
+{% block title %}{{ exam.title }}{% endblock %}
+
+{% block content %}
+<style>
+    .exam-take-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .question {
+        margin-bottom: 30px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+    }
+    .form-check {
+        margin-bottom: 10px;
+    }
+    .btn-success {
+        background: #28a745;
+        color: white;
+        width: 100%;
+    }
+    .alert-info {
+        text-align: center;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .exam-take-container {
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .question {
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .form-check {
+            margin-bottom: 8px;
+        }
+        .btn-success {
+            padding: 12px;
+        }
+    }
+</style>
+
+<div class="exam-take-container">
+    <h2 class="mb-4">{{ exam.title }}</h2>
+    <p class="alert alert-info">زمان باقی‌مانده: <span id="timer">محاسبه...</span></p>
+    <form method="post" id="examForm">
+        {% csrf_token %}
+        <input type="hidden" name="submit_answers" value="1">
+        {% for question in questions %}
+        <div class="question">
+            <p class="fw-bold">{{ question.text }}</p>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="1" id="opt1_{{ question.id }}" {% if answers|dictget:question.id == 1 %}checked{% endif %}>
+                <label class="form-check-label" for="opt1_{{ question.id }}">{{ question.option1 }}</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="2" id="opt2_{{ question.id }}" {% if answers|dictget:question.id == 2 %}checked{% endif %}>
+                <label class="form-check-label" for="opt2_{{ question.id }}">{{ question.option2 }}</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="3" id="opt3_{{ question.id }}" {% if answers|dictget:question.id == 3 %}checked{% endif %}>
+                <label class="form-check-label" for="opt3_{{ question.id }}">{{ question.option3 }}</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answer_{{ question.id }}" value="4" id="opt4_{{ question.id }}" {% if answers|dictget:question.id == 4 %}checked{% endif %}>
+                <label class="form-check-label" for="opt4_{{ question.id }}">{{ question.option4 }}</label>
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success">ارسال پاسخ‌ها</button>
+    </form>
+</div>
+<script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('cut', e => e.preventDefault());
+    document.addEventListener('paste', e => e.preventDefault());
+
+    let remaining = {{ remaining_time }};
+    const timerElement = document.getElementById('timer');
+    const interval = setInterval(() => {
+        if (remaining > 0) {
+            remaining--;
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        } else {
+            clearInterval(interval);
+            document.getElementById('examForm').submit();
+        }
+    }, 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,615 @@
+<!-- templates/form/exam_list.html -->
+{% extends 'form_base.html' %}
+{% load static %}
+
+{% block title %}لیست آزمون‌ها{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3a0ca3;
+        --accent-color: #4cc9f0;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --hover-shadow: 0 15px 40px rgba(67, 97, 238, 0.15);
+    }
+
+    .exam-list-container {
+        max-width: 1400px;
+        margin: 30px auto;
+        padding: 25px;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 35px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--secondary-color);
+        position: relative;
+        padding-right: 20px;
+    }
+
+    .page-title::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 70%;
+        background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+        border-radius: 10px;
+    }
+
+    .create-exam-btn {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+    }
+
+    .create-exam-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(67, 97, 238, 0.4);
+    }
+
+    /* حالت دسکتاپ - جدول */
+    .desktop-table {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .desktop-table:hover {
+        box-shadow: var(--hover-shadow);
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 22px 25px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .table-header h3 {
+        margin: 0;
+        color: var(--secondary-color);
+        font-weight: 700;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .exam-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .exam-table thead tr {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .exam-table th {
+        color: white;
+        font-weight: 600;
+        padding: 18px 20px;
+        text-align: right;
+        border: none;
+    }
+
+    .exam-table tbody tr {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .exam-table tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.04);
+        transform: scale(1.005);
+    }
+
+    .exam-table td {
+        padding: 20px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .status-active {
+        background: rgba(76, 201, 240, 0.15);
+        color: #1a73e8;
+    }
+
+    .status-upcoming {
+        background: rgba(255, 193, 7, 0.15);
+        color: #f57c00;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-view-link {
+        background: linear-gradient(135deg, #4cc9f0, #4361ee);
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view-grades {
+        background: linear-gradient(135deg, #7209b7, #3a0ca3);
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view-link:hover, .btn-view-grades:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* حالت موبایل - کارت */
+    .mobile-cards {
+        display: none;
+    }
+
+    .exam-card {
+        background: white;
+        border-radius: 18px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .exam-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .exam-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .exam-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--secondary-color);
+        margin: 0;
+        flex: 1;
+    }
+
+    .exam-info {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #555;
+    }
+
+    .info-item i {
+        color: var(--primary-color);
+        width: 20px;
+        text-align: center;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-card-link {
+        flex: 1;
+        min-width: 140px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-card-grades {
+        flex: 1;
+        min-width: 140px;
+        background: linear-gradient(135deg, #7209b7, #3a0ca3);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+    }
+
+    /* حالت خالی */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .empty-icon {
+        font-size: 80px;
+        color: #e0e0e0;
+        margin-bottom: 25px;
+    }
+
+    .empty-title {
+        font-size: 24px;
+        color: #666;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .empty-subtitle {
+        color: #888;
+        margin-bottom: 30px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    /* رسپانسیو */
+    @media (max-width: 992px) {
+        .exam-list-container {
+            padding: 20px 15px;
+            margin: 20px auto;
+        }
+        
+        .page-title {
+            font-size: 24px;
+        }
+        
+        .create-exam-btn {
+            padding: 12px 25px;
+            font-size: 15px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .header-section {
+            flex-direction: column;
+            align-items: stretch;
+            margin-bottom: 25px;
+        }
+        
+        .page-title {
+            text-align: center;
+            padding-right: 0;
+            padding-bottom: 15px;
+        }
+        
+        .page-title::after {
+            right: 50%;
+            top: auto;
+            bottom: 0;
+            transform: translateX(50%);
+            width: 60px;
+            height: 4px;
+        }
+        
+        .desktop-table {
+            display: none;
+        }
+        
+        .mobile-cards {
+            display: block;
+        }
+        
+        .exam-card {
+            padding: 20px;
+        }
+        
+        .card-actions {
+            flex-direction: column;
+        }
+        
+        .btn-card-link,
+        .btn-card-grades {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .exam-list-container {
+            padding: 15px 10px;
+        }
+        
+        .page-title {
+            font-size: 20px;
+        }
+        
+        .create-exam-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .exam-card {
+            padding: 18px 15px;
+        }
+        
+        .exam-title {
+            font-size: 16px;
+        }
+    }
+
+    /* انیمیشن‌ها */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .exam-table tbody tr,
+    .exam-card {
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    .exam-table tbody tr:nth-child(odd) {
+        animation-delay: 0.1s;
+    }
+
+    .exam-table tbody tr:nth-child(even) {
+        animation-delay: 0.2s;
+    }
+</style>
+
+<div class="exam-list-container">
+    <!-- هدر صفحه -->
+    <div class="header-section">
+        <h1 class="page-title">مدیریت آزمون‌ها</h1>
+        <a href="{% url 'form:create_exam' %}" class="create-exam-btn">
+            <i class="fas fa-plus-circle"></i>
+            ایجاد آزمون جدید
+        </a>
+    </div>
+
+    {% if exams %}
+        <!-- نسخه دسکتاپ (جدول) -->
+        <div class="desktop-table">
+            <div class="table-header">
+                <h3>
+                    <i class="fas fa-clipboard-list"></i>
+                    آزمون‌های ایجاد شده
+                </h3>
+            </div>
+            <div class="table-responsive">
+                <table class="exam-table">
+                    <thead>
+                        <tr>
+                            <th>عنوان آزمون</th>
+                            <th>کلاس</th>
+                            <th>تاریخ شروع</th>
+                            <th>مدت زمان</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in exams %}
+                        <tr>
+                            <td>
+                                <strong>{{ exam.title }}</strong>
+                            </td>
+                            <td>{{ exam.class_obj }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                    {{ exam.start_time|date:"Y/m/d - H:i" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-clock text-primary"></i>
+                                    {{ exam.duration }} دقیقه
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-check-circle"></i>
+                                    فعال
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'form:take_exam' exam.id %}" target="_blank" class="btn-view-link">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        مشاهده لینک
+                                    </a>
+                                    <a href="{% url 'form:exam_grades' exam.id %}" class="btn-view-grades">
+                                        <i class="fas fa-chart-bar"></i>
+                                        نمرات
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- نسخه موبایل (کارت) -->
+        <div class="mobile-cards">
+            {% for exam in exams %}
+            <div class="exam-card">
+                <div class="card-header">
+                    <h3 class="exam-title">{{ exam.title }}</h3>
+                    <span class="status-badge status-active">فعال</span>
+                </div>
+                
+                <div class="exam-info">
+                    <div class="info-item">
+                        <i class="fas fa-users"></i>
+                        <span>کلاس: <strong>{{ exam.class_obj }}</strong></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>شروع: <strong>{{ exam.start_time|date:"Y/m/d - H:i" }}</strong></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>مدت: <strong>{{ exam.duration }} دقیقه</strong></span>
+                    </div>
+                </div>
+                
+                <div class="card-actions">
+                    <a href="{% url 'form:take_exam' exam.id %}" target="_blank" class="btn-card-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        مشاهده لینک آزمون
+                    </a>
+                    <a href="{% url 'form:exam_grades' exam.id %}" class="btn-card-grades">
+                        <i class="fas fa-chart-bar"></i>
+                        مشاهده نمرات
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <!-- حالت خالی -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h2 class="empty-title">هنوز آزمونی ایجاد نکرده‌اید</h2>
+            <p class="empty-subtitle">
+                برای شروع، اولین آزمون خود را ایجاد کنید و آن را با دانش‌آموزان خود به اشتراک بگذارید.
+            </p>
+            <a href="{% url 'form:create_exam' %}" class="create-exam-btn" style="max-width: 300px; margin: 0 auto;">
+                <i class="fas fa-plus-circle"></i>
+                ساخت اولین آزمون
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- آیکون‌های فونت Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    // اسکرول نرم برای جدول در موبایل
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('.table-responsive');
+        if (table) {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            table.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - table.offsetLeft;
+                scrollLeft = table.scrollLeft;
+            });
+
+            table.addEventListener('mouseleave', () => {
+                isDown = false;
+            });
+
+            table.addEventListener('mouseup', () => {
+                isDown = false;
+            });
+
+            table.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - table.offsetLeft;
+                const walk = (x - startX) * 2;
+                table.scrollLeft = scrollLeft - walk;
+            });
+
+            // اضافه کردن انیمیشن هورور به کارت‌ها
+            const cards = document.querySelectorAll('.exam-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-8px)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

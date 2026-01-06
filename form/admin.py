@@ -1,3 +1,4 @@
+# admin.py کامل
 from django.contrib import admin
 from django.utils import timezone
 from django.urls import path
@@ -5,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
-from .models import Schedule, Class, Student, ClassSchedule, Attendance
+from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade
 
 
 @admin.register(Schedule)
@@ -35,7 +36,6 @@ class ClassScheduleAdmin(admin.ModelAdmin):
     search_fields = ('class_obj__name', 'teacher__username', 'subject')
 
     def get_urls(self):
-        """اضافه کردن URL سفارشی برای نمایش برنامه هفتگی"""
         urls = super().get_urls()
         custom_urls = [
             path('weekly_schedules/', self.admin_site.admin_view(self.weekly_schedules_view), name='weekly_schedules'),
@@ -43,7 +43,6 @@ class ClassScheduleAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def weekly_schedules_view(self, request):
-        """نمایش برنامه هفتگی برای کلاس انتخاب‌شده"""
         classes = Class.objects.all()
         selected_class = None
         schedules = []
@@ -111,19 +110,16 @@ class AttendanceAdmin(admin.ModelAdmin):
     search_fields = ('student__first_name', 'student__last_name')
 
     def zeng(self, obj):
-        """نمایش نام زنگ به جای شماره"""
         return obj.class_schedule.schedule.get_zeng_display()
     zeng.short_description = 'زنگ'
 
     def get_queryset(self, request):
-        """فیلتر کردن غیبت‌ها برای مسیر خاص"""
         qs = super().get_queryset(request)
         if request.path == '/admin/form/attendance/absent/':
             return qs.filter(status='A')
         return qs
 
     def changelist_view(self, request, extra_context=None):
-        """نمایش آمار غیبت‌ها در ماه جاری"""
         extra_context = extra_context or {}
         if request.path == '/admin/form/attendance/absent/':
             self.list_display = ('student', 'class_schedule', 'date', 'zeng')
@@ -140,7 +136,6 @@ class AttendanceAdmin(admin.ModelAdmin):
         return super().changelist_view(request, extra_context)
 
     def get_urls(self):
-        """اضافه کردن URL برای نمایش غیبت‌ها"""
         urls = super().get_urls()
         custom_urls = [
             path('absent/', self.admin_site.admin_view(self.absent_view), name='absent_list'),
@@ -148,5 +143,44 @@ class AttendanceAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def absent_view(self, request):
-        """ریدایرکت به لیست غیبت‌ها"""
         return HttpResponseRedirect('/admin/form/attendance/absent/')
+
+
+@admin.register(Major)
+class MajorAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(GradeLevel)
+class GradeLevelAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(Exam)
+class ExamAdmin(admin.ModelAdmin):
+    list_display = ('title', 'teacher', 'class_obj', 'major', 'grade_level', 'duration', 'start_time')
+    list_filter = ('teacher', 'major', 'grade_level')
+    search_fields = ('title', 'teacher__username')
+
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('exam', 'text', 'correct_option')
+    list_filter = ('exam',)
+    search_fields = ('text',)
+
+
+@admin.register(StudentAnswer)
+class StudentAnswerAdmin(admin.ModelAdmin):
+    list_display = ('student', 'question', 'selected_option', 'submitted_at')
+    list_filter = ('question__exam',)
+    search_fields = ('student__first_name', 'student__last_name')
+
+
+@admin.register(Grade)
+class GradeAdmin(admin.ModelAdmin):
+    list_display = ('student', 'exam', 'score', 'calculated_at')
+    list_filter = ('exam',)
+    search_fields = ('student__first_name', 'student__last_name')

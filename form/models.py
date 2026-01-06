@@ -1,3 +1,4 @@
+# models.py کامل
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -135,3 +136,109 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.get_status_display()} ({self.date})"
+
+
+class Major(models.Model):
+    """مدل برای رشته‌های تحصیلی"""
+    name = models.CharField(max_length=100, verbose_name="نام رشته")
+
+    class Meta:
+        verbose_name = "رشته"
+        verbose_name_plural = "رشته‌ها"
+
+    def __str__(self):
+        return self.name
+
+
+class GradeLevel(models.Model):
+    """مدل برای پایه‌های تحصیلی"""
+    name = models.CharField(max_length=50, verbose_name="نام پایه")
+
+    class Meta:
+        verbose_name = "پایه تحصیلی"
+        verbose_name_plural = "پایه‌های تحصیلی"
+
+    def __str__(self):
+        return self.name
+
+
+class Exam(models.Model):
+    """مدل برای آزمون‌ها"""
+    title = models.CharField(max_length=200, verbose_name="عنوان آزمون")
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='exams', verbose_name="معلم")
+    class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='exams', verbose_name="کلاس")
+    major = models.ForeignKey(Major, on_delete=models.SET_NULL, null=True, verbose_name="رشته")
+    grade_level = models.ForeignKey(GradeLevel, on_delete=models.SET_NULL, null=True, verbose_name="پایه تحصیلی")
+    duration = models.PositiveIntegerField(verbose_name="مدت زمان (دقیقه)", help_text="زمان آزمون به دقیقه")
+    start_time = models.DateTimeField(verbose_name="زمان شروع", default=timezone.now)
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+
+    class Meta:
+        verbose_name = "آزمون"
+        verbose_name_plural = "آزمون‌ها"
+        indexes = [
+            models.Index(fields=['teacher', 'class_obj']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - {self.class_obj}"
+
+    def is_ongoing(self):
+        """بررسی اینکه آزمون در حال برگزاری است"""
+        now = timezone.now()
+        end_time = self.start_time + timezone.timedelta(minutes=self.duration)
+        return self.start_time <= now <= end_time and self.is_active
+
+
+class Question(models.Model):
+    """مدل برای سوالات آزمون"""
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions', verbose_name="آزمون")
+    text = models.TextField(verbose_name="متن سوال")
+    option1 = models.CharField(max_length=200, verbose_name="گزینه ۱")
+    option2 = models.CharField(max_length=200, verbose_name="گزینه ۲")
+    option3 = models.CharField(max_length=200, verbose_name="گزینه ۳")
+    option4 = models.CharField(max_length=200, verbose_name="گزینه ۴")
+    correct_option = models.PositiveIntegerField(choices=((1, 'گزینه ۱'), (2, 'گزینه ۲'), (3, 'گزینه ۳'), (4, 'گزینه ۴')), verbose_name="گزینه درست")
+
+    class Meta:
+        verbose_name = "سوال"
+        verbose_name_plural = "سوالات"
+        ordering = ['id']
+
+    def __str__(self):
+        return f"سوال {self.id} از {self.exam}"
+
+
+class StudentAnswer(models.Model):
+    """مدل برای پاسخ‌های دانش‌آموزان"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='answers', verbose_name="دانش‌آموز")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers', verbose_name="سوال")
+    selected_option = models.PositiveIntegerField(verbose_name="گزینه انتخاب‌شده")
+    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ارسال")
+
+    class Meta:
+        verbose_name = "پاسخ دانش‌آموز"
+        verbose_name_plural = "پاسخ‌های دانش‌آموزان"
+        unique_together = ('student', 'question')
+        indexes = [
+            models.Index(fields=['student', 'question']),
+        ]
+
+    def is_correct(self):
+        return self.selected_option == self.question.correct_option
+
+
+class Grade(models.Model):
+    """مدل برای نمرات آزمون"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='grades', verbose_name="دانش‌آموز")
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='grades', verbose_name="آزمون")
+    score = models.FloatField(verbose_name="نمره", default=0)
+    calculated_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان محاسبه")
+
+    class Meta:
+        verbose_name = "نمره"
+        verbose_name_plural = "نمرات"
+        unique_together = ('student', 'exam')
+
+    def __str__(self):
+        return f"{self.student} - {self.exam}: {self.score}"

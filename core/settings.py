@@ -118,13 +118,11 @@ LOGGING = {
     },
 }
 
+LANGUAGE_CODE = "fa-ir"  # یا "fa"
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC" 
+TIME_ZONE = "Asia/Tehran"
 USE_I18N = True
 USE_TZ = True
-
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'

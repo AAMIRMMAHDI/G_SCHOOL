@@ -1,10 +1,15 @@
+# views.py کامل
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from .models import Class, Student, ClassSchedule, Attendance, Schedule
+from django.forms import inlineformset_factory
+from django.db.models import F
+from django.urls import reverse
+from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel
+from .forms import ExamForm
 
 User = get_user_model()
 
@@ -21,7 +26,7 @@ def user_login(request):
             return redirect('form:class_list')
         else:
             messages.error(request, 'نام کاربری یا رمز عبور اشتباه است.')
-    return render(request, 'form/login.html')
+    return render(request, 'form/Login.html')
 
 
 @login_required
@@ -49,7 +54,7 @@ def class_list(request):
         messages.error(request, f'خطا در بارگذاری کلاس‌ها: {str(e)}')
         class_schedules = []
 
-    return render(request, 'form/class_list.html', {
+    return render(request, 'form/Class_list.html', {
         'class_schedules': class_schedules,
         'show_all': show_all
     })
@@ -70,7 +75,6 @@ def attendance(request, class_schedule_id):
             messages.warning(request, 'هیچ دانش‌آموزی برای این کلاس ثبت نشده است.')
 
         if request.method == 'POST':
-            print("POST data:", request.POST)  # دیباگ
             any_status_saved = False
             for student in students:
                 status = request.POST.get(f'status_{student.id}')
@@ -95,7 +99,7 @@ def attendance(request, class_schedule_id):
             for a in Attendance.objects.filter(class_schedule=class_schedule, date=timezone.now().date())
         }
 
-        return render(request, 'form/attendance.html', {
+        return render(request, 'form/Current_List.html', {
             'class_schedule': class_schedule,
             'students': students,
             'attendance_records': attendance_records
@@ -108,6 +112,10 @@ def attendance(request, class_schedule_id):
 @login_required
 def weekly_schedule(request):
     """مدیریت برنامه هفتگی کلاس‌ها"""
+    if not request.user.is_superuser:
+        messages.error(request, 'شما مجاز به دسترسی به این صفحه نیستید.')
+        return redirect('form:class_list')  # ریدایرکت به لیست کلاس‌ها اگر ادمین نبود
+
     classes = Class.objects.all()
     selected_class = None
     schedules = []
@@ -121,7 +129,6 @@ def weekly_schedule(request):
     zengs = Schedule.objects.exclude(zeng=5).order_by('zeng')
 
     if request.method == 'POST':
-        print("POST data:", request.POST)  # دیباگ
         class_id = request.POST.get('class_id')
         if not class_id:
             messages.error(request, 'کلاس انتخاب نشده است.')
@@ -141,7 +148,6 @@ def weekly_schedule(request):
                         subject2 = request.POST.get(f'subject2_{day}_{zeng.id}')
                         unit2 = request.POST.get(f'unit2_{day}_{zeng.id}')
 
-                        # حذف رکوردهای غیرتقسیم‌شده قبلی
                         ClassSchedule.objects.filter(
                             class_obj=selected_class,
                             schedule=zeng,
@@ -185,7 +191,6 @@ def weekly_schedule(request):
                         subject = request.POST.get(f'subject_{day}_{zeng.id}')
                         unit = request.POST.get(f'unit_{day}_{zeng.id}')
 
-                        # حذف رکوردهای تقسیم‌شده قبلی
                         ClassSchedule.objects.filter(
                             class_obj=selected_class,
                             schedule=zeng,
@@ -255,7 +260,7 @@ def weekly_schedule(request):
         except Exception as e:
             messages.error(request, f'خطا در بارگذاری برنامه: {str(e)}')
 
-    return render(request, 'form/weekly_schedule.html', {
+    return render(request, 'form/Class_time.html', {
         'classes': classes,
         'selected_class': selected_class,
         'schedules': schedules,
@@ -263,3 +268,148 @@ def weekly_schedule(request):
         'zengs': zengs,
         'teachers': User.objects.all()
     })
+
+
+@login_required
+def create_exam(request):
+    """ایجاد آزمون جدید توسط معلم"""
+    QuestionFormSet = inlineformset_factory(Exam, Question, fields=('text', 'option1', 'option2', 'option3', 'option4', 'correct_option'), extra=1, min_num=1, validate_min=True, can_delete=True)
+    if request.method == 'POST':
+        form = ExamForm(request.POST)
+        if form.is_valid():
+            exam = form.save(commit=False)
+            exam.teacher = request.user
+            exam.save()
+            formset = QuestionFormSet(request.POST, instance=exam)
+            if formset.is_valid():
+                formset.save()
+                messages.success(request, 'آزمون با موفقیت ایجاد شد. لینک اشتراک: ' + request.build_absolute_uri(reverse('form:take_exam', args=[exam.id])))
+                return redirect('form:exam_list')
+            else:
+                messages.error(request, 'خطا در سوالات: ' + str(formset.errors))
+        else:
+            messages.error(request, 'خطا در فرم آزمون: ' + str(form.errors))
+    else:
+        form = ExamForm()
+        formset = QuestionFormSet(queryset=Question.objects.none())
+
+    return render(request, 'form/Test_making.html', {'form': form, 'formset': formset})
+
+
+@login_required
+def exam_list(request):
+    """لیست آزمون‌های معلم"""
+    exams = Exam.objects.filter(teacher=request.user)
+    return render(request, 'form/Test_list.html', {'exams': exams})
+
+
+def take_exam(request, exam_id):
+    """شرکت در آزمون توسط دانش‌آموز با شناسایی ساده"""
+    exam = get_object_or_404(Exam, id=exam_id)
+    if not exam.is_ongoing():
+        messages.error(request, 'این آزمون فعال نیست یا زمان آن تمام شده.')
+        return redirect('form:class_list')
+
+    student_id = request.session.get('student_id')
+    student = None
+    if student_id:
+        student = get_object_or_404(Student, id=student_id, class_obj=exam.class_obj)
+
+    if request.method == 'POST' and 'identify' in request.POST:
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        row_number = request.POST.get('row_number')
+        if first_name and last_name:
+            try:
+                student = Student.objects.get(
+                    class_obj=exam.class_obj,
+                    first_name__iexact=first_name,
+                    last_name__iexact=last_name,
+                    row_number=row_number if row_number else None
+                )
+                request.session['student_id'] = student.id
+                messages.success(request, 'شناسایی موفق. حالا آزمون را شروع کنید.')
+            except Student.DoesNotExist:
+                messages.error(request, 'دانش‌آموز یافت نشد. اطلاعات را چک کنید.')
+            except Student.MultipleObjectsReturned:
+                messages.error(request, 'چند دانش‌آموز یافت شد. شماره کلاسی وارد کنید.')
+
+    if not student:
+        return render(request, 'form/Student_login.html', {'exam': exam})
+
+    questions = exam.questions.all()
+    if request.method == 'POST' and 'submit_answers' in request.POST:
+        any_answer_saved = False
+        for question in questions:
+            selected = request.POST.get(f'answer_{question.id}')
+            if selected and selected.isdigit() and 1 <= int(selected) <= 4:
+                StudentAnswer.objects.update_or_create(
+                    student=student,
+                    question=question,
+                    defaults={'selected_option': int(selected)}
+                )
+                any_answer_saved = True
+        if any_answer_saved:
+            correct_count = StudentAnswer.objects.filter(student=student, question__exam=exam, selected_option=F('question__correct_option')).count()
+            total_questions = questions.count()
+            score = (correct_count / total_questions * 20) if total_questions else 0
+            Grade.objects.update_or_create(
+                student=student,
+                exam=exam,
+                defaults={'score': score}
+            )
+            del request.session['student_id']
+            return redirect('form:exam_result', exam_id=exam.id, student_id=student.id)
+
+    answers = {a.question_id: a.selected_option for a in StudentAnswer.objects.filter(student=student, question__exam=exam)}
+    
+    remaining_time = (exam.start_time + timezone.timedelta(minutes=exam.duration) - timezone.now()).total_seconds()
+    if remaining_time < 0:
+        remaining_time = 0
+
+    return render(request, 'form/Test_Registration.html', {
+        'exam': exam,
+        'questions': questions,
+        'answers': answers,
+        'remaining_time': remaining_time,
+        'student': student
+    })
+
+
+def exam_result(request, exam_id, student_id):
+    """نمایش نتیجه آزمون برای دانش‌آموز"""
+    exam = get_object_or_404(Exam, id=exam_id)
+    student = get_object_or_404(Student, id=student_id)
+    grade = get_object_or_404(Grade, exam=exam, student=student)
+    answers = StudentAnswer.objects.filter(student=student, question__exam=exam)
+    questions = exam.questions.all()
+    total_questions = questions.count()
+    correct_count = answers.filter(selected_option=F('question__correct_option')).count()
+    wrong_count = total_questions - correct_count
+    feedback = []
+    for answer in answers:
+        question = answer.question
+        is_correct = answer.is_correct()
+        feedback.append({
+            'question': question.text,
+            'selected': answer.selected_option,
+            'correct': question.correct_option,
+            'is_correct': is_correct
+        })
+    return render(request, 'form/Test_result.html', {
+        'exam': exam,
+        'student': student,
+        'score': grade.score,
+        'total_questions': total_questions,
+        'correct_count': correct_count,
+        'wrong_count': wrong_count,
+        'feedback': feedback
+    })
+
+
+@login_required
+def exam_grades(request, exam_id):
+    """نمایش نمرات آزمون برای معلم"""
+    exam = get_object_or_404(Exam, id=exam_id, teacher=request.user)
+    grades = Grade.objects.filter(exam=exam).order_by('-score')
+    return render(request, 'form/Test_scores.html', {'exam': exam, 'grades': grades})
