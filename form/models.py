@@ -242,3 +242,40 @@ class Grade(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.exam}: {self.score}"
+
+class EntryPermission(models.Model):
+    """مدل برای درخواست اجازه ورود دانش‌آموز دیرآمده"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='entry_permissions', verbose_name="دانش‌آموز")
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='entry_permissions', verbose_name="معلم")
+    reason = models.TextField(verbose_name="دلیل تأخیر", blank=True, null=True)
+    date = models.DateField(default=timezone.now, verbose_name="تاریخ")
+    time = models.TimeField(default=timezone.now, verbose_name="ساعت")
+    approved = models.BooleanField(default=False, verbose_name="تأیید شده توسط معلم")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='created_permissions', verbose_name="ایجاد شده توسط")
+
+    class Meta:
+        verbose_name = "اجازه ورود"
+        verbose_name_plural = "اجازه‌های ورود"
+        indexes = [
+            models.Index(fields=['student', 'date']),
+        ]
+
+    def __str__(self):
+        return f"اجازه ورود برای {self.student} به کلاس {self.teacher} در {self.date}"
+
+
+class Notification(models.Model):
+    """مدل برای نوتیفیکیشن‌ها"""
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications', verbose_name="گیرنده")
+    message = models.TextField(verbose_name="پیام")
+    related_permission = models.ForeignKey(EntryPermission, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications', verbose_name="مرتبط با اجازه ورود")
+    is_read = models.BooleanField(default=False, verbose_name="خوانده شده")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
+
+    class Meta:
+        verbose_name = "نوتیفیکیشن"
+        verbose_name_plural = "نوتیفیکیشن‌ها"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"نوتیفیکیشن برای {self.recipient}: {self.message[:50]}"

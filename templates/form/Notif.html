@@ -1,0 +1,127 @@
+{% extends 'form_base.html' %}
+
+{% block title %}نوتیفیکیشن‌های شما{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="art-card">
+        <div class="art-card-header d-flex align-items-center justify-content-between">
+            <h2 class="art-card-title mb-0"><i class="fas fa-bell me-2"></i>نوتیفیکیشن‌های شما</h2>
+            <span class="badge bg-primary">تعداد: {{ notifications.count }}</span>
+        </div>
+        <div class="art-card-body">
+            {% if notifications %}
+            <div class="row">
+                {% for notification in notifications %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0" style="border-radius: var(--radius-lg);">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-envelope text-primary me-2 fs-4"></i>
+                                <h5 class="card-title mb-0">نوتیفیکیشن جدید</h5>
+                            </div>
+                            <p class="card-text flex-grow-1">{{ notification.message }}</p>
+                            <small class="text-muted d-block mb-3"><i class="fas fa-clock me-1"></i>زمان: {{ notification.created_at|date:"Y-m-d H:i" }}</small>
+                            <form method="post" class="mt-auto d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                                <button type="submit" name="action" value="approve" class="art-btn art-btn-primary flex-grow-1"><i class="fas fa-check me-1"></i>تأیید</button>
+                                <button type="submit" name="action" value="reject" class="art-btn art-btn-secondary flex-grow-1"><i class="fas fa-times me-1"></i>رد</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info art-alert text-center">
+                <i class="fas fa-info-circle me-2"></i>هیچ نوتیفیکیشنی ندارید.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- متا برای VAPID و user_id (اینها رو در head نمی‌ذاریم چون block scripts هستش، اما برای کارکردن، می‌تونید در head منتقل کنید اگر نیاز) -->
+<meta name="vapid-public-key" content="{{ vapid_public_key }}">
+<meta name="user_id" content="{{ user_id }}">
+
+<!-- جاوااسکریپت برای درخواست دسترسی و ثبت سرویس ورکر -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if ('Notification' in window && 'serviceWorker' in navigator) {
+            if (Notification.permission !== 'granted') {
+                // نمایش پیام برای درخواست اجازه
+                if (confirm('آیا اجازه ارسال نوتیفیکیشن‌های push را می‌دهید؟ (برای دریافت اعلان حتی وقتی مرورگر بسته است)')) {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            console.log('Permission granted');
+                            registerServiceWorker();
+                        }
+                    });
+                } else {
+                    console.log('Permission denied by user');
+                }
+            } else {
+                registerServiceWorker();
+            }
+        } else {
+            console.log('Push notifications not supported');
+        }
+    });
+
+    function registerServiceWorker() {
+        navigator.serviceWorker.register('{% url "form:sw.js" %}')
+            .then(registration => {
+                initialisePush(registration);
+            })
+            .catch(error => console.error('Service Worker Error:', error));
+    }
+
+    function initialisePush(registration) {
+        const vapidPublicKey = document.querySelector('meta[name="vapid-public-key"]').content;
+        const options = {
+            userVisibleOnly: true,
+            applicationServerKey: urlB64ToUint8Array(vapidPublicKey)
+        };
+
+        registration.pushManager.subscribe(options)
+            .then(subscription => {
+                sendSubscriptionToServer(subscription);
+            })
+            .catch(error => console.error('Subscription Error:', error));
+    }
+
+    function sendSubscriptionToServer(subscription) {
+        const browser = navigator.userAgent.match(/(firefox|msie|chrome|safari|trident)/ig)[0].toLowerCase();
+        const data = {
+            status_type: 'subscribe',
+            subscription: subscription.toJSON(),
+            browser: browser,
+        };
+        fetch('/webpush/save_information', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'content-type': 'application/json' },
+            credentials: "include"
+        }).then(response => {
+            if (response.ok) {
+                console.log('Subscription saved');
+            }
+        }).catch(error => console.error('Save Subscription Error:', error));
+    }
+
+    function urlB64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+</script>
+{% endblock %}

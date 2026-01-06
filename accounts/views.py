@@ -24,7 +24,7 @@ def login_view(request):
     else:
         form = LoginForm()
 
-    return render(request, 'accounts/login.html', {
+    return render(request, 'accounts/Login.html', {
         'login_form': form,
         'register_form': RegisterForm()
     })
@@ -48,7 +48,7 @@ def register_view(request):
     else:
         form = RegisterForm()
 
-    return render(request, 'accounts/login.html', {
+    return render(request, 'accounts/Login.html', {
         'register_form': form,
         'login_form': LoginForm()
     })

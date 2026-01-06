@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
-from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade
+from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade, EntryPermission, Notification
 
 
 @admin.register(Schedule)
@@ -184,3 +184,17 @@ class GradeAdmin(admin.ModelAdmin):
     list_display = ('student', 'exam', 'score', 'calculated_at')
     list_filter = ('exam',)
     search_fields = ('student__first_name', 'student__last_name')
+
+
+@admin.register(EntryPermission)
+class EntryPermissionAdmin(admin.ModelAdmin):
+    list_display = ('student', 'teacher', 'date', 'time', 'approved')
+    list_filter = ('approved', 'date')
+    search_fields = ('student__first_name', 'student__last_name', 'teacher__username')
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'message', 'is_read', 'created_at')
+    list_filter = ('is_read', 'created_at')
+    search_fields = ('recipient__username', 'message')

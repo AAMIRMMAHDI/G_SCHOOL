@@ -8,8 +8,10 @@ from django.contrib.auth import get_user_model
 from django.forms import inlineformset_factory
 from django.db.models import F
 from django.urls import reverse
-from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel
-from .forms import ExamForm
+from django.conf import settings
+from webpush import send_user_notification
+from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel, EntryPermission, Notification
+from .forms import ExamForm, EntryPermissionForm
 
 User = get_user_model()
 
@@ -413,3 +415,72 @@ def exam_grades(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id, teacher=request.user)
     grades = Grade.objects.filter(exam=exam).order_by('-score')
     return render(request, 'form/Test_scores.html', {'exam': exam, 'grades': grades})
+
+
+@login_required
+def create_entry_permission(request):
+    """صفحه برای ادمین: ایجاد اجازه ورود و ارسال نوتیفیکیشن به معلم"""
+    if not request.user.is_superuser:  # فقط برای ادمین (معاونت)
+        messages.error(request, 'شما مجاز به دسترسی به این صفحه نیستید.')
+        return redirect('form:class_list')
+
+    if request.method == 'POST':
+        form = EntryPermissionForm(request.POST)
+        if form.is_valid():
+            permission = form.save(commit=False)
+            permission.created_by = request.user
+            permission.save()
+            # ایجاد نوتیفیکیشن برای معلم
+            message = f"درخواست اجازه ورود برای دانش‌آموز {permission.student} در تاریخ {permission.date} ساعت {permission.time}. دلیل: {permission.reason or 'بدون دلیل'}"
+            notification = Notification.objects.create(
+                recipient=permission.teacher,
+                message=message,
+                related_permission=permission
+            )
+            # ارسال push notification اگر معلم subscribed باشد
+            payload = {
+                'head': 'نوتیفیکیشن جدید: اجازه ورود',
+                'body': message
+            }
+            send_user_notification(user=permission.teacher, payload=payload, ttl=1000)
+            messages.success(request, 'اجازه ورود ایجاد و نوتیفیکیشن به معلم ارسال شد.')
+            return redirect('form:create_entry_permission')
+    else:
+        form = EntryPermissionForm()
+
+    return render(request, 'form/Entry_Permit.html', {'form': form})
+
+
+@login_required
+def notifications(request):
+    """پنل نوتیفیکیشن برای کاربر: نمایش و تأیید اجازه ورود"""
+    # حذف چک is_staff تا عمومی بشه، اما نوتیف‌های کاربر خودش رو نشون می‌ده
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False)
+    if request.method == 'POST':
+        notification_id = request.POST.get('notification_id')
+        action = request.POST.get('action')  # 'approve' یا 'reject'
+        try:
+            notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+            if notification.related_permission:
+                if action == 'approve':
+                    notification.related_permission.approved = True
+                    notification.related_permission.save()
+                    messages.success(request, 'اجازه ورود تأیید شد.')
+                elif action == 'reject':
+                    notification.related_permission.approved = False
+                    notification.related_permission.save()
+                    messages.warning(request, 'اجازه ورود رد شد.')
+            notification.is_read = True
+            notification.save()
+        except Exception as e:
+            messages.error(request, f'خطا: {str(e)}')
+        return redirect('form:notifications')
+
+    webpush_settings = getattr(settings, 'WEBPUSH_SETTINGS', {})
+    vapid_public_key = webpush_settings.get('VAPID_PUBLIC_KEY', '')
+
+    return render(request, 'form/Notif.html', {
+        'notifications': notifications,
+        'vapid_public_key': vapid_public_key,
+        'user_id': request.user.id
+    })

@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'accounts',
     'index',
     'form',
+    'webpush',
 ]
 
 
@@ -36,6 +37,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "your_vapid_public_key",  # از https://web-push-codelab.glitch.me/ تولید کنید
+    "VAPID_PRIVATE_KEY": "your_vapid_private_key",
+    "VAPID_ADMIN_EMAIL": "your_email@example.com"
+}
 
 ROOT_URLCONF = 'core.urls'
 
