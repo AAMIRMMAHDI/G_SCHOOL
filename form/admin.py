@@ -1,4 +1,4 @@
-# admin.py کامل
+# admin.py کامل (بدون تغییر، اما برای کامل بودن)
 from django.contrib import admin
 from django.utils import timezone
 from django.urls import path
@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
-from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade, EntryPermission, Notification
+from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade, EntryPermission, Notification, LiveSession  # اضافه شده LiveSession
 
 
 @admin.register(Schedule)
@@ -198,3 +198,9 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = ('recipient', 'message', 'is_read', 'created_at')
     list_filter = ('is_read', 'created_at')
     search_fields = ('recipient__username', 'message')
+
+@admin.register(LiveSession)
+class LiveSessionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'teacher', 'class_schedule', 'start_time', 'is_active', 'room_name')
+    list_filter = ('is_active', 'teacher')
+    search_fields = ('title', 'room_name')

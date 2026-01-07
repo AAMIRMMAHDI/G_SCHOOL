@@ -1,7 +1,7 @@
-# forms.py کامل
+# forms.py کامل اصلاح شده (در app form)
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Exam, Major, GradeLevel, Class, EntryPermission, Student, ClassSchedule
+from .models import Exam, Major, GradeLevel, Class, EntryPermission, Student, ClassSchedule, LiveSession  # اضافه شده LiveSession
 
 User = get_user_model()
 
@@ -31,3 +31,8 @@ class EntryPermissionForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date'}),
             'time': forms.TimeInput(attrs={'type': 'time'}),
         }
+
+class LiveSessionForm(forms.ModelForm):
+    class Meta:
+        model = LiveSession
+        fields = ['title']

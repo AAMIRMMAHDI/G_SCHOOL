@@ -1,8 +1,9 @@
-# models.py کامل
+# models.py کامل اصلاح شده (در app form)
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+import uuid  # اضافه شده برای UUID
 
 
 class Schedule(models.Model):
@@ -279,3 +280,21 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"نوتیفیکیشن برای {self.recipient}: {self.message[:50]}"
+
+class LiveSession(models.Model):
+    room_name = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
+    class_schedule = models.ForeignKey(ClassSchedule, on_delete=models.CASCADE, related_name='live_sessions')
+    title = models.CharField(max_length=200, verbose_name="عنوان جلسه")
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    start_time = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "جلسه پخش زنده"
+        verbose_name_plural = "جلسات پخش زنده"
+
+    def __str__(self):
+        return f"{self.title} - {self.class_schedule}"
+
+    def get_viewer_link(self):
+        return f"/form/live/{self.room_name}/join/"

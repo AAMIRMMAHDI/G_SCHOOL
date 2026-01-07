@@ -1,0 +1,49 @@
+<!-- templates/form/teacher_live.html (فایل جدید) -->
+{% extends "base.html" %}  <!-- تنظیم کنید -->
+{% block content %}
+<h1>پنل پخش زنده معلم</h1>
+<video id="localVideo" autoplay playsinline></video>
+<button id="startButton">شروع پخش</button>
+<button id="stopButton">پایان پخش</button>
+
+<script>
+const roomName = "{{ room_name }}";
+const socket = new WebSocket('ws://' + window.location.host + '/ws/live/' + roomName + '/');
+
+let pc = new RTCPeerConnection();
+
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+        document.getElementById('localVideo').srcObject = stream;
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    })
+    .catch(error => console.error('Error accessing media devices.', error));
+
+document.getElementById('startButton').onclick = async () => {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socket.send(JSON.stringify({ type: 'offer', offer: offer }));
+};
+
+document.getElementById('stopButton').onclick = () => {
+    pc.close();
+    socket.close();
+    // می‌تونید ajax برای update is_active بفرستید اگر نیاز
+};
+
+socket.onmessage = async (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'answer') {
+        await pc.setRemoteDescription(data.answer);
+    } else if (data.type === 'candidate') {
+        await pc.addIceCandidate(data.candidate);
+    }
+};
+
+pc.onicecandidate = (e) => {
+    if (e.candidate) {
+        socket.send(JSON.stringify({ type: 'candidate', candidate: e.candidate }));
+    }
+};
+</script>
+{% endblock %}

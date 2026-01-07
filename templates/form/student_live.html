@@ -1,0 +1,35 @@
+<!-- templates/form/student_live.html (فایل جدید) -->
+{% extends "base.html" %}  <!-- تنظیم کنید -->
+{% block content %}
+<h1>شرکت در پخش زنده</h1>
+<video id="remoteVideo" autoplay playsinline></video>
+
+<script>
+const roomName = "{{ room_name }}";
+const socket = new WebSocket('ws://' + window.location.host + '/ws/live/' + roomName + '/');
+
+let pc = new RTCPeerConnection();
+
+socket.onmessage = async (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'offer') {
+        await pc.setRemoteDescription(data.offer);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.send(JSON.stringify({ type: 'answer', answer: answer }));
+    } else if (data.type === 'candidate') {
+        await pc.addIceCandidate(data.candidate);
+    }
+};
+
+pc.onicecandidate = (e) => {
+    if (e.candidate) {
+        socket.send(JSON.stringify({ type: 'candidate', candidate: e.candidate }));
+    }
+};
+
+pc.ontrack = (e) => {
+    document.getElementById('remoteVideo').srcObject = e.streams[0];
+};
+</script>
+{% endblock %}

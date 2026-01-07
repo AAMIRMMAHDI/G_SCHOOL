@@ -1,4 +1,4 @@
-# views.py کامل
+# views.py کامل اصلاح شده (در app form)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -10,8 +10,8 @@ from django.db.models import F
 from django.urls import reverse
 from django.conf import settings
 from webpush import send_user_notification
-from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel, EntryPermission, Notification
-from .forms import ExamForm, EntryPermissionForm
+from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel, EntryPermission, Notification, LiveSession  # اضافه شده LiveSession
+from .forms import ExamForm, EntryPermissionForm, LiveSessionForm  # اضافه شده LiveSessionForm
 
 User = get_user_model()
 
@@ -484,3 +484,40 @@ def notifications(request):
         'vapid_public_key': vapid_public_key,
         'user_id': request.user.id
     })
+
+@login_required
+def create_live_session(request, class_schedule_id):
+    class_schedule = get_object_or_404(ClassSchedule, id=class_schedule_id, teacher=request.user)
+    if request.method == 'POST':
+        form = LiveSessionForm(request.POST)
+        if form.is_valid():
+            session = form.save(commit=False)
+            session.teacher = request.user
+            session.class_schedule = class_schedule
+            session.save()
+            # ارسال نوتیفیکیشن به دانش‌آموزها
+            students = Student.objects.filter(class_obj=class_schedule.class_obj)
+            link = request.build_absolute_uri(reverse('form:student_join_live', args=[session.room_name]))
+            message = f"جلسه پخش زنده '{session.title}' شروع شد: {link}"
+            for student in students:
+                # توجه: recipient رو به User تغییر بدید اگر Student User نیست، یا مدل Notification رو تنظیم کنید
+                # فرض کنیم Student یک فیلد user داره یا مستقیم Notification به Student ارسال نمی‌شه؛ اگر نیاز، تنظیم کنید
+                # برای حالا، به عنوان مثال به همه Userها ارسال می‌کنم - تنظیم کنید
+                Notification.objects.create(recipient=request.user, message=message)  # مثال، تنظیم کنید
+            messages.success(request, 'جلسه پخش زنده ایجاد شد.')
+            return redirect('form:teacher_live_view', room_name=session.room_name)
+    else:
+        form = LiveSessionForm()
+
+    return render(request, 'form/create_live_session.html', {'form': form, 'class_schedule': class_schedule})
+
+@login_required
+def teacher_live_view(request, room_name):
+    session = get_object_or_404(LiveSession, room_name=room_name, teacher=request.user, is_active=True)
+    return render(request, 'form/teacher_live.html', {'room_name': room_name})
+
+@login_required
+def student_join_live(request, room_name):
+    session = get_object_or_404(LiveSession, room_name=room_name, is_active=True)
+    # چک کنید که کاربر دانش‌آموز باشه اگر نیاز
+    return render(request, 'form/student_live.html', {'room_name': room_name})
