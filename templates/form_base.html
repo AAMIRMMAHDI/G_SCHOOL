@@ -1,3 +1,5 @@
+{% load static %}
+<link rel="icon" href="{% static 'favicon.ico' %}">
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -456,7 +458,6 @@
                     <i class="fas fa-sign-out-alt"></i>
                     <span>خروج</span>
                 </a>
-                
             </nav>
         </div>
     </header>
@@ -520,12 +521,7 @@
         
         {% block content %}{% endblock %}
     </main>
-<!-- templates/form/Class_list.html (اصلاح شده برای اضافه کردن دکمه پخش زنده) -->
-<!-- فرض کنید کد اصلی رو دارید، فقط این رو اضافه کنید به لیست class_schedules -->
-{% for schedule in class_schedules %}
-    <!-- ... بقیه کد -->
-    <a href="{% url 'form:create_live_session' schedule.id %}">شروع پخش زنده</a>
-{% endfor %}
+
     <!-- فوتر ساده در دسکتاپ -->
     <footer class="main-footer">
         <p>© تمامی حقوق این سایت محفوظ است. ۱۴۰۳</p>

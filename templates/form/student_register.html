@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فرم ثبت‌نام دانش‌آموزان - هنرستان حاج مینایی</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Vazirmatn', 'Tanha', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.8;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            border-right: 6px solid var(--secondary-color);
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .header h2 {
+            color: var(--accent-color);
+            font-size: 18px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .form-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-section::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--secondary-color);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-left: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .section-number {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .form-group {
+            flex: 1 1 calc(50% - 15px);
+            min-width: 250px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            font-size: 14px;
+        }
+        
+        .form-control, .form-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        .form-control-sm {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 8px;
+        }
+        
+        .radio-item, .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .radio-item input, .checkbox-item input {
+            margin-left: 8px;
+        }
+        
+        .inline-form-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .inline-form-group label {
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        .family-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .family-table th, .family-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .family-table th {
+            background-color: #f2f6fc;
+            font-weight: bold;
+            color: var(--primary-color);
+            white-space: nowrap;
+        }
+        
+        .family-table input {
+            width: 100%;
+            border: none;
+            padding: 8px;
+            text-align: center;
+            font-family: inherit;
+            background-color: transparent;
+        }
+        
+        .family-table input:focus {
+            outline: none;
+            background-color: #f9f9f9;
+        }
+        
+        .textarea-large {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .commitment-box {
+            background-color: #f9f9f9;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            font-size: 14px;
+            line-height: 2;
+        }
+        
+        .signature-area {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .signature-line {
+            display: inline-block;
+            width: 300px;
+            border-bottom: 1px solid #333;
+            margin: 0 15px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        .required::after {
+            content: " *";
+            color: var(--accent-color);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            background-color: #fff3cd;
+            border: 1px solid #ffecb5;
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 150px;
+        }
+        
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 50%;
+            width: 100%;
+            height: 3px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .progress-step.active:not(:last-child)::after {
+            background-color: var(--secondary-color);
+        }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            z-index: 2;
+        }
+        
+        .progress-step.active .step-circle {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .step-title {
+            font-size: 14px;
+            color: #999;
+            text-align: center;
+        }
+        
+        .progress-step.active .step-title {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .checkbox-category {
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #ddd;
+            margin: 25px 0;
+        }
+        
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .table-custom th, .table-custom td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .table-custom th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .table-input {
+            width: 100%;
+            border: none;
+            text-align: center;
+            font-family: inherit;
+        }
+        
+        .form-note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .form-group {
+                flex: 1 1 100%;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .header, .form-section {
+                padding: 15px;
+            }
+            
+            .family-table {
+                font-size: 12px;
+            }
+            
+            .family-table th, .family-table td {
+                padding: 6px;
+            }
+            
+            .progress-step {
+                width: 120px;
+            }
+        }
+        
+        .final-step {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .final-step h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .final-step p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .final-step .icon {
+            font-size: 60px;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.003/font.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-school"></i> فرم ثبت‌نام دانش‌آموزان در سال تحصیلی 1405-1404</h1>
+            <h2>(هنرستان حاج مینایی)</h2>
+        </div>
+
+        
+        <div class="alert">
+            <i class="fas fa-info-circle"></i> لطفاً تمامی اطلاعات مورد نیاز را با دقت و صحت کامل تکمیل نمایید. فیلدهای ستاره‌دار اجباری هستند.
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" action="{% url 'form:student_register' %}">
+            {% csrf_token %}
+            <!-- مرحله 1: فرم ثبت‌نام اصلی -->
+            <div class="form-section active" id="step1">
+                <!-- بخش اطلاعات شناسنامه‌ای -->
+                <div class="section-title">
+                    <i class="fas fa-id-card"></i> اطلاعات شناسنامه‌ای دانش‌آموز
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_first_name" class="required">1- نام:</label>
+                        {{ form.first_name }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_last_name" class="required">2- نام خانوادگی:</label>
+                        {{ form.last_name }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_nickname">3- نام مستعار:</label>
+                        {{ form.nickname }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_father_name" class="required">4- نام پدر:</label>
+                        {{ form.father_name }}
+                    </div>
+                </div>
+
+                <!-- فیلد رشته (major) -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_major" class="required">رشته:</label>
+                        {{ form.major }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthDate" class="required">5- تاریخ تولد:</label>
+                        <div class="inline-form-group">
+                            {{ form.birth_day }}
+                            <span>/</span>
+                            {{ form.birth_month }}
+                            <span>/</span>
+                            {{ form.birth_year }}
+                            <span>13</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_national_code" class="required">6- کد ملی:</label>
+                        {{ form.national_code }}
+                    </div>
+                </div>
+                
+                <!-- بخش اطلاعات خانوادگی -->
+                <div class="section-title" style="margin-top: 30px;">
+                    <i class="fas fa-home"></i> اطلاعات خانوادگی دانش‌آموز
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">11- نوع خانواده:</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="familyType1" name="familyType" value="azadeh">
+                                <label for="familyType1">آزاده</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="familyType2" name="familyType" value="janbaz">
+                                <label for="familyType2">جانباز</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="familyType3" name="familyType" value="basij">
+                                <label for="familyType3">عضو بسیج</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="familyType4" name="familyType" value="razmandeh">
+                                <label for="familyType4">رزمنده</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="familyType5" name="familyType" value="shohada">
+                                <label for="familyType5">خانواده شهدا</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="familyType6" name="familyType" value="farhangi">
+                                <label for="familyType6">فرهنگی</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_children_count">13- تعداد فرزندان:</label>
+                        <div class="inline-form-group">
+                            {{ form.children_count }}
+                            <span>پسر</span>
+                            {{ form.boys_count }}
+                            <span>دختر</span>
+                            {{ form.girls_count }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_child_order">14- دانش‌آموز چندمین فرزند خانواده است:</label>
+                        {{ form.child_order }}
+                    </div>
+                </div>
+                
+                <!-- جدول اطلاعات خانواده -->
+                <div class="section-title" style="margin-top: 30px;">
+                    <i class="fas fa-users"></i> اطلاعات فردی افراد خانواده
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="family-table">
+                        <thead>
+                            <tr>
+                                <th>افراد خانواده</th>
+                                <th>نام</th>
+                                <th>نام خانوادگی</th>
+                                <th>کد ملی</th>
+                                <th>شغل</th>
+                                <th>شماره همراه</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>پدر</td>
+                                <td><input type="text" name="father_name" placeholder="نام پدر"></td>
+                                <td><input type="text" name="father_last_name" placeholder="نام خانوادگی پدر"></td>
+                                <td><input type="text" name="father_national_code" placeholder="کد ملی" maxlength="10"></td>
+                                <td><input type="text" name="father_job" placeholder="شغل"></td>
+                                <td><input type="text" name="father_phone" placeholder="شماره همراه"></td>
+                            </tr>
+                            <tr>
+                                <td>مادر</td>
+                                <td><input type="text" name="mother_name" placeholder="نام مادر"></td>
+                                <td><input type="text" name="mother_last_name" placeholder="نام خانوادگی مادر"></td>
+                                <td><input type="text" name="mother_national_code" placeholder="کد ملی" maxlength="10"></td>
+                                <td><input type="text" name="mother_job" placeholder="شغل"></td>
+                                <td><input type="text" name="mother_phone" placeholder="شماره همراه"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- موقعیت جغرافیایی منزل -->
+                <div class="section-title" style="margin-top: 30px;">
+                    <i class="fas fa-map-marker-alt"></i> موقعیت جغرافیایی منزل
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_province" class="required">18- استان:</label>
+                        {{ form.province }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_county" class="required">شهرستان:</label>
+                        {{ form.county }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_city" class="required">شهر:</label>
+                        {{ form.city }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_postal_code" class="required">کد پستی منزل:</label>
+                        {{ form.postal_code }}
+                    </div>
+                </div>
+                
+                <!-- ناوبری -->
+                <div class="form-navigation">
+                    <div></div> <!-- عنصر خالی برای حفظ فاصله -->
+                    <button type="button" class="btn btn-primary next-step" data-next="2">
+                        مرحله بعد <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- مرحله 2: فرم اطلاعات و علاقمندی‌ها -->
+            <div class="form-section" id="step2">
+                <div class="section-title">
+                    <i class="fas fa-user-graduate"></i> اطلاعات تکمیلی دانش‌آموز
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="studentClass">کلاس و پایه:</label>
+                        <select id="studentClass" class="form-select" disabled>
+                            <option value="10" selected>دهم</option>
+                        </select>
+                        {{ form.grade_level }} <!-- hidden -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_home_phone">شماره تماس منزل:</label>
+                        {{ form.home_phone }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_father_education">تحصیلات پدر:</label>
+                        {{ form.father_education }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_mother_education">تحصیلات مادر:</label>
+                        {{ form.mother_education }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_father_phone">شماره تماس پدر:</label>
+                        {{ form.father_phone }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_mother_phone">شماره تماس مادر:</label>
+                        {{ form.mother_phone }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_address">آدرس منزل:</label>
+                    {{ form.address }}
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="section-title">
+                    <i class="fas fa-star"></i> علاقه‌مندی به فعالیت‌های پرورشی
+                </div>
+                <p>دانش‌آموز عزیز در کدام بخش از موارد زیر دوست دارید در مدرسه فعالیت کنید:</p>
+                
+                <div class="checkbox-category">
+                    <div class="category-title">برنامه صبحگاهی:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="morning1" name="morning1">
+                            <label for="morning1">تلاوت قرآن</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="morning2" name="morning2">
+                            <label for="morning2">دعای هفتگی</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="morning3" name="morning3">
+                            <label for="morning3">شعار هفته</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="morning4" name="morning4">
+                            <label for="morning4">اهتراز پرچم</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="morning5" name="morning5">
+                            <label for="morning5">نرمش صبحگاهی</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checkbox-category">
+                    <div class="category-title">نماز جماعت:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="prayer1" name="prayer1">
+                            <label for="prayer1">خادم نمازخانه</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="prayer2" name="prayer2">
+                            <label for="prayer2">مؤذن</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="prayer3" name="prayer3">
+                            <label for="prayer3">مکبر</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="prayer4" name="prayer4">
+                            <label for="prayer4">پیشنماز</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checkbox-category">
+                    <div class="category-title">فعالیت‌های هنری و مذهبی:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="art1" name="art1">
+                            <label for="art1">سرود</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="art2" name="art2">
+                            <label for="art2">نمایش</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="art3" name="art3">
+                            <label for="art3">نقاشی</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="art4" name="art4">
+                            <label for="art4">مجریگری</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="art5" name="art5">
+                            <label for="art5">پاسخ مقاله</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="section-title">
+                    <i class="fas fa-trophy"></i> علاقه‌مندی به حضور در مسابقات
+                </div>
+                
+                <div class="checkbox-category">
+                    <div class="category-title">مسابقات قرآن و عترت:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="quran1" name="quran1">
+                            <label for="quran1">انشای نماز</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="quran2" name="quran2">
+                            <label for="quran2">حفظ قرآن</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="quran3" name="quran3">
+                            <label for="quran3">قرائت قرآن</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="quran4" name="quran4">
+                            <label for="quran4">اذان</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checkbox-category">
+                    <div class="category-title">مسابقات ورزشی:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sport1" name="sport1">
+                            <label for="sport1">فوتبال</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sport2" name="sport2">
+                            <label for="sport2">والیبال</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sport3" name="sport3">
+                            <label for="sport3">هندبال</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sport4" name="sport4">
+                            <label for="sport4">تنیس روی میز</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sport5" name="sport5">
+                            <label for="sport5">طناب‌زنی</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="section-title">
+                    <i class="fas fa-award"></i> عناوین و رتبه‌های کسب شده
+                </div>
+                
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>(ردیف)</th>
+                            <th>عنوان (رشته)</th>
+                            <th>رتبه</th>
+                            <th>سطح مسابقات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" class="table-input" name="achievement_title_1" placeholder="عنوان"></td>
+                            <td><input type="text" class="table-input" name="achievement_rank_1" placeholder="رتبه"></td>
+                            <td><input type="text" class="table-input" name="achievement_level_1" placeholder="سطح"></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><input type="text" class="table-input" name="achievement_title_2" placeholder="عنوان"></td>
+                            <td><input type="text" class="table-input" name="achievement_rank_2" placeholder="رتبه"></td>
+                            <td><input type="text" class="table-input" name="achievement_level_2" placeholder="سطح"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="divider"></div>
+                
+                <div class="section-title">
+                    <i class="fas fa-tools"></i> سایر مهارت‌ها و توانمندی‌ها
+                </div>
+                {{ form.other_skills }}
+                
+                <!-- ناوبری -->
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-secondary prev-step" data-prev="1">
+                        <i class="fas fa-arrow-right"></i> مرحله قبل
+                    </button>
+                    <button type="button" class="btn btn-primary next-step" data-next="3">
+                        مرحله بعد <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- مرحله 3: تأیید و ارسال نهایی -->
+            <div class="form-section" id="step3">
+                <div class="final-step">
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>تأیید و ارسال نهایی اطلاعات</h3>
+                    <p>اطلاعات ثبت‌نامی و علاقمندی‌های شما با موفقیت ثبت شد. لطفاً قبل از ارسال نهایی، اطلاعات وارد شده را مرور کنید.</p>
+                    
+                    <!-- آپلود عکس کارنامه -->
+                    <div class="form-group">
+                        <label for="id_report_card_image" class="required">آپلود عکس کارنامه:</label>
+                        {{ form.report_card_image }}
+                    </div>
+                    
+                    <!-- بیماری‌های خاص -->
+                    <div class="section-title" style="justify-content: center;">
+                        <i class="fas fa-heartbeat"></i> بیماری‌های خاص دانش‌آموز:
+                    </div>
+                    
+                    {{ form.diseases }}
+                    
+                    <!-- بخش تعهد و امضا -->
+                    <div class="section-title" style="margin-top: 40px; justify-content: center;">
+                        <i class="fas fa-file-signature"></i> تعهد و امضا
+                    </div>
+                    
+                    <div class="commitment-box">
+                        <p>اینجانب <span class="signature-line"></span> ولی دانش‌آموز <span class="signature-line"></span> کلاس 
+                        <span>
+                            <select style="border: none; background: transparent; border-bottom: 1px dashed #333;" disabled>
+                                <option value="10" selected>دهم</option>
+                            </select>
+                        </span> هنرستان حاج مینایی (دوره دوم متوسطه) که در سال تحصیلی 1405-1404 در این آموزشگاه مشغول به تحصیل می‌باشد، تعهد می‌دهم که تمام موارد بالا را با دقت تکمیل نموده و جهت ثبت‌نام اینترنتی به آموزشگاه تحویل داده‌ام.</p>
+                    </div>
+                    
+                    <div class="signature-area">
+                        <p>نام و نام خانوادگی ولی دانش‌آموز و امضا:</p>
+                        <div style="margin-top: 30px;">
+                            <span class="signature-line"></span>
+                            <span style="margin-right: 20px;">امضا</span>
+                        </div>
+                    </div>
+                    
+                    <!-- ناوبری -->
+                    <div class="form-navigation" style="margin-top: 50px;">
+                        <button type="button" class="btn btn-secondary prev-step" data-prev="2">
+                            <i class="fas fa-arrow-right"></i> مرحله قبل
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submit-all">
+                            <i class="fas fa-paper-plane"></i> ارسال اطلاعات ثبت‌نامی
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // مدیریت مراحل فرم
+        document.addEventListener('DOMContentLoaded', function() {
+            const steps = document.querySelectorAll('.form-section');
+            let currentStep = 1;
+            
+            // نمایش مرحله فعلی
+            function showStep(stepNumber) {
+                steps.forEach(step => {
+                    step.classList.remove('active');
+                });
+                
+                const currentStepElement = document.getElementById(`step${stepNumber}`);
+                if (currentStepElement) {
+                    currentStepElement.classList.add('active');
+                }
+                
+                currentStep = stepNumber;
+            }
+            
+            // رویداد برای دکمه‌های مرحله بعد
+            document.querySelectorAll('.next-step').forEach(button => {
+                button.addEventListener('click', function() {
+                    const nextStep = parseInt(this.dataset.next);
+                    if (validateCurrentStep(currentStep)) {
+                        showStep(nextStep);
+                    }
+                });
+            });
+            
+            // رویداد برای دکمه‌های مرحله قبل
+            document.querySelectorAll('.prev-step').forEach(button => {
+                button.addEventListener('click', function() {
+                    const prevStep = parseInt(this.dataset.prev);
+                    showStep(prevStep);
+                });
+            });
+            
+            // اعتبارسنجی مرحله فعلی
+            function validateCurrentStep(step) {
+                let isValid = true;
+                
+                if (step === 1) {
+                    const requiredFields = document.querySelectorAll('#step1 .required ~ input, #step1 .required ~ select');
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            isValid = false;
+                            field.style.borderColor = '#e74c3c';
+                        } else {
+                            field.style.borderColor = '#ddd';
+                        }
+                    });
+                    
+                    if (!isValid) {
+                        alert('لطفاً تمام فیلدهای اجباری را پر کنید.');
+                    }
+                }
+                
+                return isValid;
+            }
+            
+            // محدودیت‌های ورودی برای کد ملی
+            document.querySelectorAll('input[maxlength="10"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+                });
+            });
+            
+            // مقداردهی اولیه
+            showStep(1);
+        });
+    </script>
+</body>
+</html>

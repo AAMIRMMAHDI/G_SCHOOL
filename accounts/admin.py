@@ -37,3 +37,16 @@ class CustomUserAdmin(UserAdmin):
         updated = queryset.update(is_approved=False)
         self.message_user(request, _(f'{updated} user(s) successfully unapproved.'))
     unapprove_users.short_description = _('Unapprove selected users')
+
+
+
+
+
+
+
+
+
+
+
+
+    

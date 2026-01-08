@@ -1,4 +1,4 @@
-# admin.py کامل (بدون تغییر، اما برای کامل بودن)
+# admin.py کامل اصلاح‌شده (fields آپدیت برای TextField، بدون نیاز به JSON)
 from django.contrib import admin
 from django.utils import timezone
 from django.urls import path
@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
-from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade, EntryPermission, Notification, LiveSession  # اضافه شده LiveSession
+from .models import Schedule, Class, Student, ClassSchedule, Attendance, Major, GradeLevel, Exam, Question, StudentAnswer, Grade, EntryPermission, Notification, StudentRegistrationRequest
 
 
 @admin.register(Schedule)
@@ -18,7 +18,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'major', 'grade_level')
     search_fields = ('name',)
 
 
@@ -28,79 +28,6 @@ class StudentAdmin(admin.ModelAdmin):
     list_filter = ('class_obj',)
     search_fields = ('first_name', 'last_name', 'father_name')
 
-
-@admin.register(ClassSchedule)
-class ClassScheduleAdmin(admin.ModelAdmin):
-    list_display = ('class_obj', 'schedule', 'teacher', 'get_day_display', 'subject', 'unit', 'is_split', 'split_part')
-    list_filter = ('schedule', 'day', 'teacher', 'is_split')
-    search_fields = ('class_obj__name', 'teacher__username', 'subject')
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('weekly_schedules/', self.admin_site.admin_view(self.weekly_schedules_view), name='weekly_schedules'),
-        ]
-        return custom_urls + urls
-
-    def weekly_schedules_view(self, request):
-        classes = Class.objects.all()
-        selected_class = None
-        schedules = []
-        days = [
-            ('Sat', 'شنبه'),
-            ('Sun', 'یک‌شنبه'),
-            ('Mon', 'دوشنبه'),
-            ('Tue', 'سه‌شنبه'),
-            ('Wed', 'چهارشنبه'),
-        ]
-        zengs = Schedule.objects.exclude(zeng=5).order_by('zeng')
-
-        try:
-            if request.GET.get('class_id'):
-                selected_class = get_object_or_404(Class, id=request.GET.get('class_id'))
-                for day, day_name in days:
-                    day_schedules = []
-                    for zeng in zengs:
-                        split_schedules = ClassSchedule.objects.filter(
-                            class_obj=selected_class,
-                            schedule=zeng,
-                            day=day,
-                            is_split=True
-                        ).order_by('split_part')
-
-                        if split_schedules.exists():
-                            day_schedules.append({
-                                'zeng': zeng,
-                                'is_split': True,
-                                'first_half': split_schedules.filter(split_part=1).first(),
-                                'second_half': split_schedules.filter(split_part=2).first()
-                            })
-                        else:
-                            schedule = ClassSchedule.objects.filter(
-                                class_obj=selected_class,
-                                schedule=zeng,
-                                day=day,
-                                is_split=False
-                            ).first()
-                            day_schedules.append({
-                                'zeng': zeng,
-                                'is_split': False,
-                                'schedule': schedule
-                            })
-                    schedules.append({'day': day, 'day_name': day_name, 'periods': day_schedules})
-            else:
-                messages.info(request, 'لطفاً یک کلاس انتخاب کنید.')
-        except Exception as e:
-            messages.error(request, f'خطا در بارگذاری برنامه هفتگی: {str(e)}')
-
-        context = {
-            'classes': classes,
-            'selected_class': selected_class,
-            'schedules': schedules,
-            'days': days,
-            'zengs': zengs,
-        }
-        return render(request, 'admin/form/classschedule/weekly_schedules.html', context)
 
 
 @admin.register(Attendance)
@@ -172,35 +99,63 @@ class QuestionAdmin(admin.ModelAdmin):
     search_fields = ('text',)
 
 
-@admin.register(StudentAnswer)
-class StudentAnswerAdmin(admin.ModelAdmin):
-    list_display = ('student', 'question', 'selected_option', 'submitted_at')
-    list_filter = ('question__exam',)
-    search_fields = ('student__first_name', 'student__last_name')
-
-
 @admin.register(Grade)
 class GradeAdmin(admin.ModelAdmin):
     list_display = ('student', 'exam', 'score', 'calculated_at')
     list_filter = ('exam',)
     search_fields = ('student__first_name', 'student__last_name')
 
+@admin.register(StudentRegistrationRequest)
+class StudentRegistrationRequestAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'major', 'grade_level', 'status', 'created_at')
+    list_filter = ('status', 'major', 'grade_level')
+    search_fields = ('first_name', 'last_name')
+    fields = ('first_name', 'last_name', 'nickname', 'father_name', 'birth_day', 'birth_month', 'birth_year', 
+              'national_code', 'family_type', 'children_count', 'boys_count', 'girls_count', 'child_order',
+              'family_info', 'province', 'county', 'city', 'postal_code', 'home_phone', 'father_education',
+              'mother_education', 'father_phone', 'mother_phone', 'address', 'interests_morning', 'interests_prayer',
+              'interests_art', 'competitions_quran', 'competitions_sport', 'achievements', 'other_skills',
+              'diseases', 'major', 'grade_level', 'report_card_image', 'class_assigned', 'status', 'notes')
+    actions = ['approve_request', 'reject_request']
 
-@admin.register(EntryPermission)
-class EntryPermissionAdmin(admin.ModelAdmin):
-    list_display = ('student', 'teacher', 'date', 'time', 'approved')
-    list_filter = ('approved', 'date')
-    search_fields = ('student__first_name', 'student__last_name', 'teacher__username')
+    def approve_request(self, request, queryset):
+        tenth = GradeLevel.objects.filter(name='دهم').first()
+        if not tenth:
+            self.message_user(request, "پایه دهم تعریف نشده.", level=messages.ERROR)
+            return
+        for req in queryset:
+            if req.status != 'P':
+                self.message_user(request, f"فقط درخواست‌های pending قابل تایید است: {req}", level=messages.ERROR)
+                continue
+            if not req.grade_level:
+                req.grade_level = tenth
+                req.save()
+            if req.grade_level != tenth:
+                self.message_user(request, f"فقط پایه دهم مجاز است: {req}", level=messages.ERROR)
+                continue
+            if not req.class_assigned:
+                self.message_user(request, f"کلاس را برای {req} انتخاب کنید.", level=messages.ERROR)
+                continue
+            if not req.class_assigned.has_capacity():
+                self.message_user(request, f"کلاس {req.class_assigned} ظرفیت ندارد.", level=messages.ERROR)
+                continue
+            if req.class_assigned.grade_level != req.grade_level or req.class_assigned.major != req.major:
+                self.message_user(request, f"کلاس {req.class_assigned} با پایه یا رشته مطابقت ندارد.", level=messages.ERROR)
+                continue
+            student = Student.objects.create(
+                class_obj=req.class_assigned,
+                row_number=req.class_assigned.students.count() + 1,
+                first_name=req.first_name,
+                last_name=req.last_name,
+                father_name=req.father_name
+            )
+            req.status = 'A'
+            req.save()
+            self.message_user(request, f"درخواست {req} تایید شد و دانش‌آموز {student} اضافه شد.", level=messages.SUCCESS)
 
-
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('recipient', 'message', 'is_read', 'created_at')
-    list_filter = ('is_read', 'created_at')
-    search_fields = ('recipient__username', 'message')
-
-@admin.register(LiveSession)
-class LiveSessionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'teacher', 'class_schedule', 'start_time', 'is_active', 'room_name')
-    list_filter = ('is_active', 'teacher')
-    search_fields = ('title', 'room_name')
+    def reject_request(self, request, queryset):
+        for req in queryset:
+            if req.status == 'P':
+                req.status = 'R'
+                req.save()
+                self.message_user(request, f"درخواست {req} رد شد.", level=messages.WARNING)

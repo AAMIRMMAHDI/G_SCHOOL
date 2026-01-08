@@ -1,10 +1,8 @@
-# models.py کامل اصلاح شده (در app form)
+# models.py کامل اصلاح‌شده (family_info و achievements به TextField عوض شدن، بدون JSONField)
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-import uuid  # اضافه شده برای UUID
-
 
 class Schedule(models.Model):
     """مدل برای تعریف زنگ‌های کلاسی"""
@@ -42,16 +40,21 @@ class Schedule(models.Model):
 class Class(models.Model):
     """مدل برای تعریف کلاس‌ها"""
     name = models.CharField(max_length=100, verbose_name="Class Name")
+    major = models.ForeignKey('Major', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="رشته")
+    grade_level = models.ForeignKey('GradeLevel', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="پایه تحصیلی")
 
     class Meta:
         verbose_name = "Class"
-        verbose_name_plural = "کلاس ها"
+        verbose_name_plural = "کلاس"
         indexes = [
             models.Index(fields=['name']),
         ]
 
     def __str__(self):
         return self.name
+
+    def has_capacity(self):
+        return self.students.count() < 20
 
 
 class Student(models.Model):
@@ -130,7 +133,7 @@ class Attendance(models.Model):
 
     class Meta:
         verbose_name = "Attendance"
-        verbose_name_plural = "حضور غیاب"
+        verbose_name_plural = "حضور"
         indexes = [
             models.Index(fields=['student', 'date']),
         ]
@@ -157,7 +160,7 @@ class GradeLevel(models.Model):
 
     class Meta:
         verbose_name = "پایه تحصیلی"
-        verbose_name_plural = "پایه‌های تحصیلی"
+        verbose_name_plural = "پایه"
 
     def __str__(self):
         return self.name
@@ -176,7 +179,7 @@ class Exam(models.Model):
 
     class Meta:
         verbose_name = "آزمون"
-        verbose_name_plural = "آزمون‌ها"
+        verbose_name_plural = "آزمون"
         indexes = [
             models.Index(fields=['teacher', 'class_obj']),
         ]
@@ -281,20 +284,55 @@ class Notification(models.Model):
     def __str__(self):
         return f"نوتیفیکیشن برای {self.recipient}: {self.message[:50]}"
 
-class LiveSession(models.Model):
-    room_name = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
-    class_schedule = models.ForeignKey(ClassSchedule, on_delete=models.CASCADE, related_name='live_sessions')
-    title = models.CharField(max_length=200, verbose_name="عنوان جلسه")
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    start_time = models.DateTimeField(default=timezone.now)
-    is_active = models.BooleanField(default=True)
+class StudentRegistrationRequest(models.Model):
+    STATUS_CHOICES = (
+        ('P', 'Pending'),
+        ('A', 'Approved'),
+        ('R', 'Rejected'),
+    )
+    first_name = models.CharField(max_length=50, verbose_name="نام")
+    last_name = models.CharField(max_length=50, verbose_name="نام خانوادگی")
+    nickname = models.CharField(max_length=50, blank=True, null=True, verbose_name="نام مستعار")
+    father_name = models.CharField(max_length=50, verbose_name="نام پدر")
+    birth_day = models.PositiveIntegerField(verbose_name="روز تولد")
+    birth_month = models.PositiveIntegerField(verbose_name="ماه تولد")
+    birth_year = models.PositiveIntegerField(verbose_name="سال تولد")
+    national_code = models.CharField(max_length=10, verbose_name="کد ملی")
+    family_type = models.TextField(blank=True, verbose_name="نوع خانواده")  # e.g., "azadeh,janbaz"
+    children_count = models.PositiveIntegerField(default=0, verbose_name="تعداد فرزندان")
+    boys_count = models.PositiveIntegerField(default=0, verbose_name="تعداد پسر")
+    girls_count = models.PositiveIntegerField(default=0, verbose_name="تعداد دختر")
+    child_order = models.PositiveIntegerField(default=1, verbose_name="ترتیب فرزند")
+    family_info = models.TextField(blank=True, verbose_name="اطلاعات خانواده")  # string ساده، مثل "پدر: نام,نام خانوادگی,کد ملی,شغل,شماره; مادر: ..."
+    province = models.CharField(max_length=100, verbose_name="استان")
+    county = models.CharField(max_length=100, verbose_name="شهرستان")
+    city = models.CharField(max_length=100, verbose_name="شهر")
+    postal_code = models.CharField(max_length=10, verbose_name="کد پستی")
+    home_phone = models.CharField(max_length=15, blank=True, verbose_name="شماره منزل")
+    father_education = models.CharField(max_length=100, blank=True, verbose_name="تحصیلات پدر")
+    mother_education = models.CharField(max_length=100, blank=True, verbose_name="تحصیلات مادر")
+    father_phone = models.CharField(max_length=15, blank=True, verbose_name="شماره پدر")
+    mother_phone = models.CharField(max_length=15, blank=True, verbose_name="شماره مادر")
+    address = models.TextField(blank=True, verbose_name="آدرس")
+    interests_morning = models.TextField(blank=True, verbose_name="علاقه‌مندی صبحگاهی")
+    interests_prayer = models.TextField(blank=True, verbose_name="علاقه‌مندی نماز")
+    interests_art = models.TextField(blank=True, verbose_name="علاقه‌مندی هنری")
+    competitions_quran = models.TextField(blank=True, verbose_name="مسابقات قرآن")
+    competitions_sport = models.TextField(blank=True, verbose_name="مسابقات ورزشی")
+    achievements = models.TextField(blank=True, verbose_name="عناوین کسب شده")  # string ساده، مثل "عنوان1,رتبه1,سطح1; عنوان2,رتبه2,سطح2"
+    other_skills = models.TextField(blank=True, verbose_name="سایر مهارت‌ها")
+    diseases = models.TextField(blank=True, verbose_name="بیماری‌های خاص")
+    major = models.ForeignKey(Major, on_delete=models.SET_NULL, null=True, verbose_name="رشته")
+    grade_level = models.ForeignKey(GradeLevel, on_delete=models.SET_NULL, null=True, verbose_name="پایه تحصیلی")
+    report_card_image = models.ImageField(upload_to='report_cards/', verbose_name="عکس کارنامه")
+    class_assigned = models.ForeignKey(Class, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="کلاس割り当て شده")  # ادمین انتخاب کنه
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P', verbose_name="وضعیت")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
+    notes = models.TextField(blank=True, null=True, verbose_name="یادداشت ادمین")
 
     class Meta:
-        verbose_name = "جلسه پخش زنده"
-        verbose_name_plural = "جلسات پخش زنده"
+        verbose_name = "درخواست ثبت نام دانش‌آموز"
+        verbose_name_plural = "درخواست‌های ثبت نام"
 
     def __str__(self):
-        return f"{self.title} - {self.class_schedule}"
-
-    def get_viewer_link(self):
-        return f"/form/live/{self.room_name}/join/"
+        return f"{self.first_name} {self.last_name} - {self.get_status_display()}"

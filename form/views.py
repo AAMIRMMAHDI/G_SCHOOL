@@ -1,4 +1,4 @@
-# views.py کامل اصلاح شده (در app form)
+# views.py کامل اصلاح‌شده (parse برای TextField – string ساده)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -10,8 +10,8 @@ from django.db.models import F
 from django.urls import reverse
 from django.conf import settings
 from webpush import send_user_notification
-from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel, EntryPermission, Notification, LiveSession  # اضافه شده LiveSession
-from .forms import ExamForm, EntryPermissionForm, LiveSessionForm  # اضافه شده LiveSessionForm
+from .models import Class, Student, ClassSchedule, Attendance, Schedule, Exam, Question, StudentAnswer, Grade, Major, GradeLevel, EntryPermission, Notification, StudentRegistrationRequest
+from .forms import ExamForm, EntryPermissionForm, StudentRegistrationForm
 
 User = get_user_model()
 
@@ -485,39 +485,48 @@ def notifications(request):
         'user_id': request.user.id
     })
 
-@login_required
-def create_live_session(request, class_schedule_id):
-    class_schedule = get_object_or_404(ClassSchedule, id=class_schedule_id, teacher=request.user)
+def student_register(request):
+    tenth = GradeLevel.objects.filter(name='دهم').first()
+    if not tenth:
+        messages.error(request, "پایه دهم تعریف نشده است. در ادمین اضافه کنید.")
+        return redirect('form:class_list')  # یا صفحه دیگر
+
     if request.method == 'POST':
-        form = LiveSessionForm(request.POST)
+        form = StudentRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            session = form.save(commit=False)
-            session.teacher = request.user
-            session.class_schedule = class_schedule
-            session.save()
-            # ارسال نوتیفیکیشن به دانش‌آموزها
-            students = Student.objects.filter(class_obj=class_schedule.class_obj)
-            link = request.build_absolute_uri(reverse('form:student_join_live', args=[session.room_name]))
-            message = f"جلسه پخش زنده '{session.title}' شروع شد: {link}"
-            for student in students:
-                # توجه: recipient رو به User تغییر بدید اگر Student User نیست، یا مدل Notification رو تنظیم کنید
-                # فرض کنیم Student یک فیلد user داره یا مستقیم Notification به Student ارسال نمی‌شه؛ اگر نیاز، تنظیم کنید
-                # برای حالا، به عنوان مثال به همه Userها ارسال می‌کنم - تنظیم کنید
-                Notification.objects.create(recipient=request.user, message=message)  # مثال، تنظیم کنید
-            messages.success(request, 'جلسه پخش زنده ایجاد شد.')
-            return redirect('form:teacher_live_view', room_name=session.room_name)
+            req = form.save(commit=False)
+            req.grade_level = tenth
+            # parse checkboxها
+            req.family_type = ','.join(request.POST.getlist('familyType'))
+            req.interests_morning = ','.join([k[7:] for k in request.POST if k.startswith('morning') and request.POST[k] == 'on'])
+            req.interests_prayer = ','.join([k[6:] for k in request.POST if k.startswith('prayer') and request.POST[k] == 'on'])
+            req.interests_art = ','.join([k[3:] for k in request.POST if k.startswith('art') and request.POST[k] == 'on'])
+            req.competitions_quran = ','.join([k[5:] for k in request.POST if k.startswith('quran') and request.POST[k] == 'on'])
+            req.competitions_sport = ','.join([k[5:] for k in request.POST if k.startswith('sport') and request.POST[k] == 'on'])
+            # خانواده به string
+            family_info = f"پدر: {request.POST.get('father_name', '')},{request.POST.get('father_last_name', '')},{request.POST.get('father_national_code', '')},{request.POST.get('father_job', '')},{request.POST.get('father_phone', '')}; مادر: {request.POST.get('mother_name', '')},{request.POST.get('mother_last_name', '')},{request.POST.get('mother_national_code', '')},{request.POST.get('mother_job', '')},{request.POST.get('mother_phone', '')}"
+            req.family_info = family_info
+            # achievements به string
+            achievements = []
+            for i in range(1, 3):
+                title = request.POST.get(f'achievement_title_{i}', '')
+                if title:
+                    achievements.append(f"{title},{request.POST.get(f'achievement_rank_{i}', '')},{request.POST.get(f'achievement_level_{i}', '')}")
+            req.achievements = '; '.join(achievements)
+            req.diseases = request.POST.get('diseases', '')
+            req.save()
+            # نوتیفیکیشن
+            admins = User.objects.filter(is_superuser=True)
+            for admin in admins:
+                Notification.objects.create(
+                    recipient=admin,
+                    message=f"درخواست ثبت نام جدید از {req.first_name} {req.last_name} (پایه دهم، رشته {req.major})"
+                )
+            messages.success(request, 'درخواست شما ارسال شد و در انتظار تایید است.')
+            return redirect('form:student_register')
+        else:
+            messages.error(request, f'خطا در فرم: {form.errors}')
     else:
-        form = LiveSessionForm()
+        form = StudentRegistrationForm()
 
-    return render(request, 'form/create_live_session.html', {'form': form, 'class_schedule': class_schedule})
-
-@login_required
-def teacher_live_view(request, room_name):
-    session = get_object_or_404(LiveSession, room_name=room_name, teacher=request.user, is_active=True)
-    return render(request, 'form/teacher_live.html', {'room_name': room_name})
-
-@login_required
-def student_join_live(request, room_name):
-    session = get_object_or_404(LiveSession, room_name=room_name, is_active=True)
-    # چک کنید که کاربر دانش‌آموز باشه اگر نیاز
-    return render(request, 'form/student_live.html', {'room_name': room_name})
+    return render(request, 'form/student_register.html', {'form': form})

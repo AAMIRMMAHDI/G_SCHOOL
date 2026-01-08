@@ -1,7 +1,3 @@
-"""
-Django settings for core project.
-"""
-
 from pathlib import Path
 import os
 import sys
@@ -10,7 +6,7 @@ import sys
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!@#$%^&*()random-key-please-change-me-in-production!@#$%^&*()'
+SECRET_KEY = 'django-insecure-change-this-in-production-!@#$%^&*()'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -19,28 +15,26 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 INSTALLED_APPS = [
-    # Django core apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',
     
-    # Third-party apps
-    'channels',      # برای WebSocket و پخش زنده
-    'webpush',       # برای نوتیفیکیشن‌های وب
+    # Third party apps
+    'django.contrib.humanize',  # برای فرمت‌های خوانا
     
     # Local apps
-    'accounts.apps.AccountsConfig',
-    'index.apps.IndexConfig',
-    'form.apps.FormConfig',
+    'accounts',
+    'index',
+    'form',
+    'webpush',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # برای سرو استاتیک فایل‌ها
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # برای سرو استاتیک‌فایل‌ها
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -55,7 +49,9 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,19 +59,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media',    # اضافه شد
-                'django.template.context_processors.static',   # اضافه شد
-                'django.template.context_processors.i18n',     # اضافه شد
-            ],
-            'builtins': [
-                'django.templatetags.static',  # برای دسترسی آسان به static
+                'django.template.context_processors.media',  # اضافه شد
+                'django.template.context_processors.static',  # اضافه شد
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
-ASGI_APPLICATION = 'core.asgi.application'  # برای Channels
 
 # Database
 DATABASES = {
@@ -105,27 +96,24 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'fa-ir'
 TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # محل جمع‌آوری فایل‌های استاتیک
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# Media files
+# Media files (Uploaded by users)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Optimize static files
+# Static files storage (برای production)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in debug mode
 
-# File upload settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication
 AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -133,45 +121,15 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 
-# Session settings
-SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-
-# Security (for development only - change in production!)
-if DEBUG:
-    CSRF_COOKIE_SECURE = False
-    SESSION_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
-else:
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
-
 # Webpush settings
 WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "BLabla",  # از https://web-push-codelab.glitch.me/ تولید کنید
-    "VAPID_PRIVATE_KEY": "blabla",
+    "VAPID_PUBLIC_KEY": "your_vapid_public_key_here",
+    "VAPID_PRIVATE_KEY": "your_vapid_private_key_here",
     "VAPID_ADMIN_EMAIL": "admin@example.com"
 }
 
-# Channels settings (WebSocket)
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # برای توسعه
-        # برای production از Redis استفاده کنید:
-        # 'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        # 'CONFIG': {
-        #     "hosts": [('127.0.0.1', 6379)],
-        # },
-    },
-}
-
-# Email configuration (for development)
+# Email settings (برای تست)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 25
-DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 # Logging configuration
 LOGGING = {
@@ -179,15 +137,11 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
         'simple': {
             'format': '{levelname}: {message}',
-            'style': '{',
-        },
-        'detailed': {
-            'format': '[{asctime}] {levelname} {name}.{funcName}:{lineno} - {message}',
             'style': '{',
         },
     },
@@ -199,32 +153,19 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'detailed',
-            'encoding': 'utf-8',
-        },
-        'error_file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'errors.log',
+            'filename': BASE_DIR / 'django.log',
             'formatter': 'verbose',
-            'level': 'ERROR',
-            'encoding': 'utf-8',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
         'django.server': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': False,
-        },
-        'django.request': {
-            'handlers': ['error_file', 'console'],
-            'level': 'ERROR',
             'propagate': False,
         },
         'accounts': {
@@ -242,43 +183,28 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-        'channels': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
     },
     'root': {
-        'handlers': ['console', 'file', 'error_file'],
+        'handlers': ['console', 'file'],
         'level': 'WARNING',
     },
 }
 
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Security settings for production (غیرفعال در حالت توسعه)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
 
-# Cache configuration (for development)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
-
-# Message storage
-MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
-
-# Welcome message
+# نمایش پیام راه‌اندازی
 print("=" * 80)
-print("🚀 G_SCHOOL Django Project Initialized Successfully!")
-print("=" * 80)
+print("🚀 Django Project Initialized Successfully!")
 print(f"📁 BASE_DIR: {BASE_DIR}")
-print(f"🌍 DEBUG Mode: {DEBUG}")
-print(f"🔗 Static URL: {STATIC_URL}")
-print(f"📸 Media URL: {MEDIA_URL}")
-print(f"📚 Language: {LANGUAGE_CODE}")
-print(f"⏰ Timezone: {TIME_ZONE}")
-print(f"👤 Auth User Model: {AUTH_USER_MODEL}")
-print("=" * 80)
-print("✅ Project is ready to run!")
+print(f"🔗 STATIC_URL: {STATIC_URL}")
+print(f"📸 MEDIA_URL: {MEDIA_URL}")
+print(f"🌐 LANGUAGE_CODE: {LANGUAGE_CODE}")
+print(f"⏰ TIME_ZONE: {TIME_ZONE}")
 print("=" * 80)

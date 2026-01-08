@@ -43,11 +43,7 @@ urlpatterns = [
         content_type='text/plain'
     )),
     
-    # Favicon
-    path('favicon.ico', TemplateView.as_view(
-        template_name='favicon.ico',
-        content_type='image/x-icon'
-    )),
+
 ]
 
 # اضافه کردن URLهای استاتیک و مدیا فقط در حالت توسعه

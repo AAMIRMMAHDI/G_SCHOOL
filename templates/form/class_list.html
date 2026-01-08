@@ -1,4 +1,4 @@
-<!-- templates/form/class_list.html کامل اصلاح شده -->
+<!-- templates/form/class_list.html کامل -->
 {% extends 'form_base.html' %}
 {% load static i18n %}
 
@@ -94,17 +94,16 @@
         background: #f1f3f5;
     }
 
-    .btn-attendance, .btn-live {
+    .btn-attendance {
         background: var(--success);
         color: var(--white);
         padding: 8px 16px;
         border-radius: 8px;
         text-decoration: none;
         transition: var(--transition);
-        margin-left: 8px;  /* فاصله بین دکمه‌ها */
     }
 
-    .btn-attendance:hover, .btn-live:hover {
+    .btn-attendance:hover {
         background: var(--accent);
     }
 
@@ -166,12 +165,9 @@
             padding: 10px;
             font-size: 12px;
         }
-        .btn-attendance, .btn-live {
+        .btn-attendance {
             padding: 6px 12px;
             font-size: 12px;
-            margin-left: 0;
-            margin-bottom: 5px;
-            display: block;
         }
         .empty-state {
             padding: 30px;
@@ -239,9 +235,6 @@
                         <td>
                             <a href="{% url 'form:attendance' schedule.id %}" class="btn-attendance">
                                 <i class="fas fa-clipboard-check"></i> ثبت حضور و غیاب
-                            </a>
-                            <a href="{% url 'form:create_live_session' schedule.id %}" class="btn-live">
-                                <i class="fas fa-video"></i> شروع پخش زنده
                             </a>
                         </td>
                     </tr>
